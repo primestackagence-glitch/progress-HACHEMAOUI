@@ -1,0 +1,1487 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+
+    <link rel="icon" href="https://i.postimg.cc/52zCNLxV/unnamed.webp" type="image/webp">
+    <link rel="apple-touch-icon" href="https://i.postimg.cc/52zCNLxV/unnamed.webp">
+    <link rel="manifest" href="manifest.json">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#009688">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>Student Portal</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-green: #009688;
+            --light-green: #26a69a;
+            --dark-blue: #363b4e;
+            --light-gray: #f4f6f9;
+            --white: #ffffff;
+            --red: #e74c3c;
+            --text-dark: #333;
+            --text-light: #7f8c8d;
+            --border-color: #ecf0f1;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        html, body {
+            height: 100%;
+            height: 100dvh; /* Dynamic viewport height - handles mobile browser bars */
+            overflow: hidden;
+        }
+
+        body {
+            font-family: 'Tajawal', 'Roboto', sans-serif;
+            background-color: #dcdcdc;
+            display: flex;
+            justify-content: center;
+            align-items: stretch;
+            height: 100dvh;
+            color: var(--text-dark);
+            overflow: hidden;
+        }
+
+        .mobile-frame {
+            width: 100%;
+            max-width: 500px;
+            height: 100dvh;
+            background-color: var(--light-gray);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            flex-shrink: 0;
+        }
+
+        /* On large screens (tablets/desktops) show it as a phone frame */
+        @media (min-width: 600px) {
+            body {
+                align-items: center;
+                background-color: var(--white);
+            }
+            .mobile-frame {
+                height: 896px;
+                max-height: 95dvh;
+                border-radius: 40px;
+                box-shadow: none;
+                border: 1px solid #eee; /* optional light border instead of shadow */
+            }
+        }
+
+        /* Pages - تنزلق أفقياً كالـ scroll بينما الـ nav ثابت */
+        .page {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            padding-bottom: 80px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            visibility: hidden;
+            pointer-events: none;
+            transform: translateX(0);
+            transition: transform 0.38s cubic-bezier(0.4, 0, 0.2, 1);
+            will-change: transform;
+        }
+
+        #home-page {
+            overflow-y: hidden;
+        }
+
+        .page.active {
+            visibility: visible;
+            pointer-events: auto;
+        }
+
+        /* Header */
+        .app-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 15px;
+            flex-shrink: 0;
+        }
+
+        .app-header h1 {
+            font-size: 26px;
+            font-weight: 700;
+            color: #4c4c4c;
+        }
+
+        .header-s {
+            color: #000000;
+            font-weight: 900;
+        }
+
+
+        .header-icons {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            font-size: 20px;
+        }
+
+        .avatar-sm {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .back-btn {
+            background: none;
+            border: none;
+            font-size: 22px;
+            color: var(--text-dark);
+            cursor: pointer;
+            padding: 5px;
+        }
+
+        .header-placeholder {
+            width: 32px; /* Match back-btn size for alignment */
+        }
+
+
+        /* Bottom Nav */
+        .bottom-nav {
+            position: absolute;
+            bottom: 26px;
+            left: 22px;
+            right: 22px;
+            background-color: var(--dark-blue);
+            display: flex;
+            justify-content: space-around;
+            padding: 0;
+            border-radius: 14px;
+            box-shadow: none; /* Removed shadow */
+            overflow: hidden;
+        }
+
+        #home-page, #cards-page {
+            background-color: var(--white);
+        }
+
+        /* Sliding green pill that moves behind the buttons */
+        .nav-pill {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            border-radius: 14px;
+            background-color: var(--primary-green);
+            transition: left 0.38s cubic-bezier(0.4, 0, 0.2, 1),
+                        width 0.38s cubic-bezier(0.4, 0, 0.2, 1);
+            will-change: left, width;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .nav-btn {
+            background: none;
+            border: none;
+            color: #9ea8b5;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            flex: 1;
+            padding: 12px 10px;
+            border-radius: 14px;
+            transition: color 0.3s ease;
+            position: relative;
+            z-index: 1;
+        }
+
+        .nav-btn i {
+            font-size: 22px;
+        }
+
+        .nav-btn.active {
+            color: var(--white);
+        }
+
+
+        /* Home Page */
+        #home-page {
+            padding-left: 15px;
+            padding-right: 15px;
+        }
+        .progres-card {
+            border-radius: 15px;
+            margin: 0 10px 5px;
+            overflow: hidden;
+            height: 100px;
+            flex-shrink: 0;
+            position: relative;
+        }
+        .banner-carousel {
+            display: flex;
+            width: 100%;
+            height: 100%;
+            overflow-x: scroll;
+            scroll-snap-type: x mandatory;
+            scroll-behavior: smooth;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+            -webkit-overflow-scrolling: touch;
+        }
+        .banner-carousel::-webkit-scrollbar {
+            display: none;
+        }
+        .progres-logo {
+            flex: 0 0 100%;
+            width: 100%;
+            height: 100%;
+            object-fit: fill;
+            scroll-snap-align: start;
+            user-select: none;
+            -webkit-user-drag: none;
+            draggable: false;
+        }
+
+
+
+        .carousel-indicators {
+            display: flex;
+            justify-content: center;
+            gap: 6px;
+            margin-bottom: 10px;
+        }
+        .indicator {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: #d1d5db;
+            transition: all 0.3s ease;
+        }
+        .indicator.active {
+            width: 16px; /* Pill shape for active dot */
+            border-radius: 4px;
+            background-color: var(--primary-green);
+        }
+
+        .services-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 6px;
+            padding: 0 15px 15px;
+            grid-auto-rows: 55px;
+        }
+        .service-btn {
+            background-color: var(--primary-green);
+            color: var(--white);
+            border: none;
+            border-radius: 8px;
+            padding: 2px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 4px; /* Space between icon and text */
+            font-size: 11px;
+            font-weight: 700;
+            cursor: pointer;
+            text-align: center;
+            transition: background-color 0.2s;
+            width: 100%;
+            height: 100%;
+        }
+
+        .service-btn:hover {
+            background-color: #00897b; /* slightly darker green on hover */
+        }
+
+        .service-btn i {
+            font-size: 16px;
+            width: 20px;
+        }
+        .service-btn.full-width {
+            grid-column: 1 / -1;
+        }
+        
+        /* Scrollable content areas for other pages */
+        #discharge-page .discharge-content,
+        #restoration-page .page-content-centered,
+        #upload-cards-page .page-content-centered {
+            flex: 1;
+            overflow-y: auto;
+            min-height: 0;
+        }
+
+        /* Discharge Page / Edit Form */
+        .discharge-content {
+            padding: 10px 20px 20px;
+        }
+
+        .edit-profile-form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group label {
+            font-size: 14px;
+            color: var(--text-light);
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        .form-group input {
+            border: 1px solid var(--border-color);
+            background-color: var(--white);
+            border-radius: 10px;
+            padding: 14px;
+            font-size: 16px;
+            font-family: 'Tajawal', 'Roboto', sans-serif;
+            outline: none;
+            transition: border-color 0.2s;
+            width: 100%;
+        }
+        .form-group input:focus {
+            border-color: var(--primary-green);
+        }
+
+        .save-btn {
+            background-color: var(--primary-green);
+            color: var(--white);
+            border: none;
+            border-radius: 12px;
+            padding: 16px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            margin-top: 10px;
+        }
+
+        .save-btn:hover {
+            background-color: var(--light-green);
+        }
+
+
+        /* Restoration Page & Upload Cards Page */
+        .page-content-centered {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 20px;
+            gap: 20px;
+        }
+
+        .huge-icon {
+            font-size: 80px;
+            color: var(--primary-green);
+            opacity: 0.5;
+        }
+
+        .page-content-centered p {
+            font-size: 16px;
+            color: var(--text-light);
+            max-width: 300px;
+        }
+
+        .action-btn {
+            background-color: var(--primary-green);
+            color: var(--white);
+            border: none;
+            border-radius: 12px;
+            padding: 16px 32px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            margin-top: 10px;
+            width: 100%;
+            max-width: 300px;
+        }
+
+        .action-btn:hover {
+            background-color: var(--light-green);
+        }
+
+        .upload-section {
+            width: 100%;
+            max-width: 300px;
+            text-align: center;
+        }
+
+        .upload-section p {
+            font-size: 16px;
+            color: var(--text-dark);
+            margin-bottom: 10px;
+            font-weight: 500;
+        }
+
+
+        /* Cards Page - Flippable Card */
+        .flippable-card-container {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            perspective: 1000px;
+        }
+
+        .flippable-card-inner {
+            position: relative;
+            width: 100%;
+            max-width: 360px;
+            aspect-ratio: 360 / 600;
+            transition: transform 0.8s;
+            transform-style: preserve-3d;
+            cursor: pointer;
+            touch-action: none; /* يمنع تداخل التمرير الطبيعي مع السحب */
+        }
+
+        .flippable-card-inner.is-flipped {
+            transform: rotateY(180deg);
+        }
+
+        .id-card {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
+            
+            background-color: var(--white);
+            border-radius: 15px;
+            box-shadow: none; /* Removed shadow */
+            padding: 0; /* Remove padding to let background fill completely */
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            direction: rtl; /* For Arabic text */
+            background-size: 100% 100%;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
+
+        .flippable-card-back {
+            transform: rotateY(180deg);
+        }
+
+        .id-card-header {
+            display: flex;
+            justify-content: center;
+            text-align: center;
+            margin-bottom: 20px;
+            align-items: center;
+            gap: 15px;
+        }
+        .gov-text {
+            font-size: 11px;
+            line-height: 1.5;
+            font-weight: 500;
+        }
+        .onou-logo {
+            width: 50px;
+            height: 50px;
+        }
+
+        .id-card-body {
+            display: flex;
+            gap: 15px;
+            flex: 1;
+        }
+        .id-card-main-content {
+            flex: 1;
+        }
+        .card-title {
+            font-size: 22px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            color: var(--primary-green);
+        }
+        .info-grid {
+            display: grid;
+            grid-template-columns: auto 1fr;
+            gap: 10px 15px;
+            font-size: 13px;
+        }
+        .info-grid span:nth-child(odd) {
+            font-weight: 500;
+            color: var(--text-light);
+        }
+        .id-card-sidebar {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+        }
+        .student-photo {
+            width: 80px;
+            height: 100px;
+            border-radius: 8px;
+            object-fit: cover;
+            border: 3px solid var(--border-color);
+        }
+        .qr-code {
+            width: 90px;
+            height: 90px;
+        }
+
+        .id-card-footer {
+          margin-top: auto;
+          padding-top: 15px;
+          font-size: 11px;
+          text-align: center;
+          font-weight: 500;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          direction: ltr;
+        }
+
+        /* Profile Page */
+        #profile-page .profile-content {
+            padding: 0 20px 20px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+            min-height: 0;
+            background-color: #f8f9fa; /* Light background for the whole page */
+        }
+        
+        .new-profile-header {
+            background: var(--white);
+            border-radius: 0 0 25px 25px;
+            padding: 30px 20px 20px;
+            margin: 0 -20px 20px; /* Stretch to edges */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            box-shadow: none;
+        }
+        
+        .new-profile-header .avatar-lg {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid #eee;
+            margin-bottom: 15px;
+        }
+        
+        .new-profile-header #profile-name {
+            font-size: 22px;
+            font-weight: 700;
+            color: #222;
+            margin: 0 0 5px;
+            text-align: center;
+        }
+        
+        .new-profile-header #profile-university {
+            font-size: 14px;
+            color: #888;
+            margin: 0;
+            text-align: center;
+        }
+
+        .new-card {
+            background-color: var(--white);
+            border-radius: 16px;
+            padding: 15px 20px;
+            margin-bottom: 15px;
+            border: 1px solid #f0f0f0;
+            box-shadow: none;
+        }
+        
+        .detail-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .detail-item i {
+            font-size: 20px;
+            color: var(--primary-green);
+            width: 25px;
+            text-align: center;
+        }
+        
+        .detail-item div {
+            text-align: right;
+        }
+        
+        .detail-label {
+            font-size: 12px;
+            color: #888;
+            margin: 0 0 4px;
+        }
+        
+        .detail-value {
+            font-size: 15px;
+            font-weight: 700;
+            color: #333;
+            margin: 0;
+        }
+        
+        .profile-details-card.new-card hr {
+            border: none;
+            height: 1px;
+            background-color: #f0f0f0;
+            margin: 15px 0;
+        }
+
+        .profile-action-card.new-card {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .action-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .action-item i {
+            font-size: 20px;
+            color: var(--primary-green);
+        }
+        
+        .lang-btn-new {
+            background: transparent;
+            border: 1.5px solid var(--primary-green);
+            color: var(--primary-green);
+            border-radius: 10px;
+            padding: 6px 14px;
+            font-weight: 700;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        .logout-btn.new-logout {
+            background-color: #e53935;
+            color: var(--white);
+            border: none;
+            border-radius: 12px;
+            padding: 14px;
+            font-size: 16px;
+            font-weight: 700;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            width: 100%;
+            margin-top: 5px;
+            cursor: pointer;
+        }
+        
+        .profile-footer-link {
+            text-align: center;
+            margin-top: 15px;
+        }
+        
+        .profile-footer-link a {
+            color: var(--primary-green);
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+
+        .logout-btn:hover {
+            background-color: #c0392b;
+        }
+
+        /* RTL Styles */
+        .mobile-frame.rtl {
+            direction: rtl;
+        }
+
+        .mobile-frame.rtl .app-header {
+            /* direction:rtl already handles the order */
+        }
+
+        .mobile-frame.rtl .profile-info,
+        .mobile-frame.rtl .detail-item > div {
+            text-align: right;
+        }
+
+        .mobile-frame.rtl .id-card-footer {
+            direction: rtl;
+        }
+
+        .mobile-frame.rtl .form-group label {
+            text-align: right;
+        }
+
+        /* Bottom nav pill shape like image */
+        .bottom-nav {
+            justify-content: space-between;
+        }
+
+        /* Make Arabic title look correct */
+        #header-title-home {
+            font-size: 22px;
+            font-weight: 700;
+            color: #222;
+        }
+        /* Splash Screen */
+        #splash-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #dcdcdc;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            opacity: 1;
+            transition: opacity 0.3s ease;
+        }
+
+        #splash-screen.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        #splash-screen img {
+            width: 100%;
+            max-width: 380px;
+            object-fit: contain;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="mobile-frame rtl">
+
+        <!-- Splash Screen -->
+        <div id="splash-screen">
+            <img src="https://i.ibb.co/LXv6wX3z/image.png" alt="PROGRES" draggable="false">
+        </div>
+
+        <main id="home-page" class="page active">
+            <header class="app-header">
+                <h1 id="header-title-home" style="width: 100%; text-align: right; margin: 0;">بوابة الطالب</h1>
+            </header>
+
+            <section class="progres-card">
+                <div class="banner-carousel" id="banner-carousel">
+                    <img src="https://i.ibb.co/4gTfs7pz/IMG-3567.jpg" alt="Progres Banner 1" class="progres-logo" draggable="false">
+                    <img src="https://i.ibb.co/KpbyXPgL/IMG-3545.jpg" alt="Progres Banner 2" class="progres-logo" draggable="false">
+                </div>
+            </section>
+
+            <div class="carousel-indicators" id="banner-indicators">
+                <div class="indicator active"></div>
+                <div class="indicator"></div>
+            </div>
+
+
+            <section class="services-grid">
+                <!-- Row 1 (RTL so Right is first child) -->
+                <button class="service-btn"><i class="fa-regular fa-calendar-alt"></i><span>الجدول الزمني</span></button>
+                <button class="service-btn" id="goto-discharge-btn"><i class="fa-solid fa-file-alt"></i><span>التبرئة الإلكترونية</span></button>
+                
+                <!-- Row 2 -->
+                <button class="service-btn"><i class="fa-regular fa-calendar-check"></i><span>الجدول الزمني للإمتحانات</span></button>
+                <button class="service-btn"><i class="fa-solid fa-user-group"></i><span>المجموعة و الفوج</span></button>
+                
+                <!-- Row 3 -->
+                <button class="service-btn"><i class="fa-solid fa-pen"></i><span>التقييم المستمر</span></button>
+                <button class="service-btn"><i class="fa-solid fa-graduation-cap"></i><span>علامات الامتحانات</span></button>
+                
+                <!-- Row 4 -->
+                <button class="service-btn"><i class="fa-solid fa-folder"></i><span>كشف النقاط</span></button>
+                <button class="service-btn"><i class="fa-solid fa-chart-pie"></i><span>النسبة المئوية للمقاييس</span></button>
+                
+                <!-- Row 5 -->
+                <button class="service-btn"><i class="fa-solid fa-file"></i><span>عطلة أكاديمية</span></button>
+                <button class="service-btn"><i class="fa-solid fa-calculator"></i><span>الديون</span></button>
+                
+                <!-- Row 6 -->
+                <button class="service-btn"><i class="fa-solid fa-circle-exclamation"></i><span>الغيابات و الإقصاءات</span></button>
+                <button class="service-btn"><i class="fa-solid fa-inbox"></i><span>تسجيلاتي</span></button>
+                
+                <!-- Row 7 -->
+                <button class="service-btn"><i class="fa-solid fa-table-cells"></i><span>خدمات أخرى</span></button>
+                <button class="service-btn" id="goto-restoration-btn"><i class="fa-solid fa-building"></i><span>خدمات جامعية</span></button>
+            </section>
+        </main>
+
+        <main id="discharge-page" class="page">
+            <header class="app-header">
+                <button class="back-btn"><i class="fas fa-arrow-left"></i></button>
+                <h1 id="header-title-discharge">Edit Profile</h1>
+                <div class="header-placeholder"></div>
+            </header>
+            <section class="discharge-content">
+                <form id="edit-profile-form" class="edit-profile-form">
+                    <div class="form-group">
+                        <label for="input-firstname" id="label-firstname">First Name</label>
+                        <input type="text" id="input-firstname" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="input-lastname" id="label-lastname">Last Name</label>
+                        <input type="text" id="input-lastname" required>
+                    </div>
+                     <div class="form-group">
+                        <label for="input-university" id="label-university">University</label>
+                        <input type="text" id="input-university" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="input-pob" id="label-pob-form">Place of Birth</label>
+                        <input type="text" id="input-pob" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="input-dob" id="label-dob-form">Date of Birth</label>
+                        <input type="date" id="input-dob" required>
+                    </div>
+                    <button type="submit" class="save-btn" id="save-changes-btn">Save Changes</button>
+                </form>
+            </section>
+        </main>
+
+        <main id="restoration-page" class="page">
+            <header class="app-header">
+                <button class="back-btn"><i class="fas fa-arrow-left"></i></button>
+                <h1 id="header-title-restoration">Change Picture</h1>
+                <div class="header-placeholder"></div>
+            </header>
+            <section class="page-content-centered">
+                <i class="fa-solid fa-image-portrait huge-icon"></i>
+                <p id="upload-prompt-text">Select a new photo for your profile and ID cards.</p>
+                <button class="action-btn" id="upload-avatar-btn">Upload New Photo</button>
+            </section>
+        </main>
+        
+        <main id="upload-cards-page" class="page">
+            <header class="app-header">
+                <button class="back-btn"><i class="fas fa-arrow-left"></i></button>
+                <h1 id="header-title-upload-cards">Upload Card Images</h1>
+                <div class="header-placeholder"></div>
+            </header>
+            <section class="page-content-centered">
+                <div class="upload-section">
+                    <p id="upload-student-card-prompt">Student Card (Front)</p>
+                    <button class="action-btn" id="upload-student-card-btn">Upload Image</button>
+                </div>
+                <div class="upload-section">
+                    <p id="upload-residence-card-prompt">Residence Card (Back)</p>
+                    <button class="action-btn" id="upload-residence-card-btn">Upload Image</button>
+                </div>
+            </section>
+        </main>
+
+        <main id="cards-page" class="page">
+            <div class="flippable-card-container">
+              <div class="flippable-card-inner">
+                  <div class="id-card flippable-card-front" id="card-1">
+                      <!-- Card is intentionally left blank -->
+                  </div>
+                  <div class="id-card flippable-card-back" id="card-2">
+                      <!-- Card is intentionally left blank -->
+                  </div>
+              </div>
+            </div>
+        </main>
+
+        <main id="profile-page" class="page">
+            <section class="profile-content">
+                <div class="profile-summary-card new-profile-header">
+                    <img src="https://i.postimg.cc/X7wz6fQ6/mami-hacker.jpg" alt="User Avatar" class="avatar-lg" id="profile-avatar-lg">
+                    <div class="profile-info">
+                        <h3 id="profile-name">بركاني امياس</h3>
+                        <p id="profile-university">جامعة بجاية</p>
+                    </div>
+                </div>
+
+                <div class="profile-details-card new-card">
+                    <div class="detail-item">
+                        <i class="fa-solid fa-location-dot"></i>
+                        <div>
+                            <p class="detail-label" id="label-pob">مكان الميلاد</p>
+                            <p class="detail-value" id="profile-pob">بجاية</p>
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="detail-item">
+                        <i class="fa-regular fa-calendar"></i>
+                        <div>
+                            <p class="detail-label" id="label-dob">تاريخ الميلاد</p>
+                            <p class="detail-value" id="profile-dob">2005-12-04</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="profile-action-card new-card">
+                    <div class="action-item">
+                        <i class="fa-solid fa-language"></i>
+                        <span id="action-change-lang" style="color: #666; font-weight: 500;">تغيير اللغة</span>
+                    </div>
+                    <button class="lang-btn-new">ar</button>
+                </div>
+
+                <button class="logout-btn new-logout" id="logout-btn">
+                    تسجيل الخروج
+                    <i class="fa-solid fa-arrow-right-from-bracket"></i>
+                </button>
+                
+                <div class="profile-footer-link">
+                    <a href="#">مذكرة إعلامية</a>
+                </div>
+            </section>
+        </main>
+
+        <nav class="bottom-nav" id="bottom-nav">
+            <div class="nav-pill" id="nav-pill"></div>
+            <button class="nav-btn" data-target="profile-page">
+                <i class="fas fa-user"></i>
+                <span id="nav-profile">حسابي</span>
+            </button>
+            <button class="nav-btn" data-target="cards-page">
+                <i class="fas fa-id-card"></i>
+                <span id="nav-cards">بطاقاتي</span>
+            </button>
+            <button class="nav-btn active" data-target="home-page">
+                <i class="fas fa-home"></i>
+                <span id="nav-home">الرئيسية</span>
+            </button>
+        </nav>
+
+    </div>
+
+    <input type="file" id="avatar-upload-input" style="display: none;" accept="image/*">
+    <input type="file" id="student-card-upload-input" style="display: none;" accept="image/*">
+    <input type="file" id="residence-card-upload-input" style="display: none;" accept="image/*">
+    <script>
+        const STUDENT_CARD_FRONT_URL = "https://i.ibb.co/MrcC510/image.jpg";
+        const RESIDENCE_CARD_BACK_URL = "https://i.ibb.co/2fwHYrp/image.jpg";
+
+        // إجبار المتصفح على تحميل الصور فوراً لتخزينها في الـ Cache حتى لو كانت مخفية
+        new Image().src = STUDENT_CARD_FRONT_URL;
+        new Image().src = RESIDENCE_CARD_BACK_URL;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('card-1').style.backgroundImage = `url('${STUDENT_CARD_FRONT_URL}')`;
+            document.getElementById('card-2').style.backgroundImage = `url('${RESIDENCE_CARD_BACK_URL}')`;
+
+            // =====================
+            // Splash Screen Logic
+            // =====================
+            const splash = document.getElementById('splash-screen');
+            if (splash) {
+                setTimeout(() => {
+                    splash.classList.add('hidden');
+                    // إزالته من الـ DOM بعد انتهاء transition
+                    setTimeout(() => splash.remove(), 300);
+                }, 800); // تقليل وقت الظهور إلى 0.8 ثانية
+            }
+
+            // =====================
+            // Banner Carousel Logic
+            // =====================
+            const bannerCarousel = document.getElementById('banner-carousel');
+            const indicators = document.querySelectorAll('.indicator');
+
+            if (bannerCarousel && indicators.length) {
+                let currentSlide = 0;
+                const slides = Array.from(bannerCarousel.children);
+                const totalSlides = slides.length;
+
+                // Go to specific slide smoothly
+                const goToSlide = (index) => {
+                    currentSlide = (index + totalSlides) % totalSlides;
+                    slides[currentSlide].scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'nearest',
+                        inline: 'start'
+                    });
+                };
+
+                // IntersectionObserver to sync dots with scroll position
+                const observer = new IntersectionObserver((entries) => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) {
+                            const index = slides.indexOf(entry.target);
+                            currentSlide = index;
+                            indicators.forEach((ind, i) => {
+                                ind.classList.toggle('active', i === index);
+                            });
+                        }
+                    });
+                }, { root: bannerCarousel, threshold: 0.5 });
+
+                slides.forEach(slide => observer.observe(slide));
+
+                // Auto-advance every 4 seconds
+                let autoTimer = setInterval(() => goToSlide(currentSlide + 1), 4000);
+
+                // Reset timer on manual swipe
+                bannerCarousel.addEventListener('touchstart', () => {
+                    clearInterval(autoTimer);
+                }, { passive: true });
+
+                bannerCarousel.addEventListener('touchend', () => {
+                    autoTimer = setInterval(() => goToSlide(currentSlide + 1), 4000);
+                }, { passive: true });
+
+                // Click on dots to navigate
+                indicators.forEach((dot, i) => {
+                    dot.addEventListener('click', () => {
+                        clearInterval(autoTimer);
+                        goToSlide(i);
+                        autoTimer = setInterval(() => goToSlide(currentSlide + 1), 4000);
+                    });
+                });
+            }
+
+
+            const navButtons = document.querySelectorAll('.nav-btn');
+            const pages = document.querySelectorAll('.page');
+
+            // Sub-page navigation
+            const homePage = document.getElementById('home-page');
+            
+            const gotoDischargeBtn = document.getElementById('goto-discharge-btn');
+            const backBtnFromDischarge = document.querySelector('#discharge-page .back-btn');
+            const dischargePage = document.getElementById('discharge-page');
+            
+            const gotoRestorationBtn = document.getElementById('goto-restoration-btn');
+            const backBtnFromRestoration = document.querySelector('#restoration-page .back-btn');
+            const restorationPage = document.getElementById('restoration-page');
+
+            const gotoUploadCardsBtn = document.getElementById('goto-upload-cards-btn');
+            const backBtnFromUploadCards = document.querySelector('#upload-cards-page .back-btn');
+            const uploadCardsPage = document.getElementById('upload-cards-page');
+
+            if (gotoDischargeBtn) {
+                gotoDischargeBtn.addEventListener('click', () => {
+                    homePage.classList.remove('active');
+                    dischargePage.classList.add('active');
+                    document.querySelector('.nav-btn.active')?.classList.remove('active');
+                    populateEditForm();
+                });
+            }
+
+            if (backBtnFromDischarge) {
+                backBtnFromDischarge.addEventListener('click', () => {
+                    dischargePage.classList.remove('active');
+                    homePage.classList.add('active');
+                    document.querySelector('.nav-btn[data-target="home-page"]')?.classList.add('active');
+                });
+            }
+
+            if (gotoRestorationBtn) {
+                gotoRestorationBtn.addEventListener('click', () => {
+                    homePage.classList.remove('active');
+                    restorationPage.classList.add('active');
+                    document.querySelector('.nav-btn.active')?.classList.remove('active');
+                });
+            }
+
+            if (backBtnFromRestoration) {
+                backBtnFromRestoration.addEventListener('click', () => {
+                    restorationPage.classList.remove('active');
+                    homePage.classList.add('active');
+                    document.querySelector('.nav-btn[data-target="home-page"]')?.classList.add('active');
+                });
+            }
+            
+            if (gotoUploadCardsBtn) {
+                gotoUploadCardsBtn.addEventListener('click', () => {
+                    homePage.classList.remove('active');
+                    uploadCardsPage.classList.add('active');
+                    document.querySelector('.nav-btn.active')?.classList.remove('active');
+                });
+            }
+
+            if (backBtnFromUploadCards) {
+                backBtnFromUploadCards.addEventListener('click', () => {
+                    uploadCardsPage.classList.remove('active');
+                    homePage.classList.add('active');
+                    document.querySelector('.nav-btn[data-target="home-page"]')?.classList.add('active');
+                });
+            }
+
+            // ============================================
+            // Navigation with sliding green pill
+            // ============================================
+            const navPill = document.getElementById('nav-pill');
+
+            // Move the green pill to the active button
+            const movePill = (activeBtn) => {
+                if (!navPill || !activeBtn) return;
+                const navEl = document.getElementById('bottom-nav');
+                const navRect = navEl.getBoundingClientRect();
+                const btnRect = activeBtn.getBoundingClientRect();
+                navPill.style.left  = (btnRect.left - navRect.left) + 'px';
+                navPill.style.width = btnRect.width + 'px';
+            };
+
+            // Initialize pill on first load (no animation)
+            const initPill = () => {
+                const activeBtn = document.querySelector('.nav-btn.active');
+                if (activeBtn && navPill) {
+                    navPill.style.transition = 'none';
+                    movePill(activeBtn);
+                    requestAnimationFrame(() => { navPill.style.transition = ''; });
+                }
+            };
+            initPill();
+
+            // ترتيب الصفحات من اليسار لليمين بصرياً في واجهة RTL
+            // home(0) على اليسار | cards(1) في المنتصف | profile(2) على اليمين
+            const pageOrder = { 'home-page': 0, 'cards-page': 1, 'profile-page': 2 };
+            let currentPageId = 'home-page';
+            let isPageAnimating = false; // لمنع الخلل عند الضغط المتكرر السريع
+
+            const switchPage = (targetPageId, activeBtn) => {
+                if (targetPageId === currentPageId || isPageAnimating) return;
+                isPageAnimating = true;
+
+                const fromPage = document.getElementById(currentPageId);
+                const toPage   = document.getElementById(targetPageId);
+                if (!fromPage || !toPage) {
+                    isPageAnimating = false;
+                    return;
+                }
+
+                const fromIdx = pageOrder[currentPageId] ?? 0;
+                const toIdx   = pageOrder[targetPageId] ?? 0;
+
+                const dir = toIdx > fromIdx ? 1 : -1;
+
+                toPage.style.transition = 'none';
+                toPage.style.transform = `translateX(${dir * 100}%)`;
+                toPage.classList.add('active');
+
+                toPage.getBoundingClientRect();
+
+                toPage.style.transition = '';
+                toPage.style.transform = 'translateX(0)';
+                fromPage.style.transform = `translateX(${-dir * 100}%)`;
+
+                setTimeout(() => {
+                    fromPage.classList.remove('active');
+                    fromPage.style.transform = '';
+                    isPageAnimating = false; // فتح القفل بعد انتهاء الانتقال
+                }, 400);
+
+                currentPageId = targetPageId;
+
+                navButtons.forEach(btn => btn.classList.remove('active'));
+                activeBtn.classList.add('active');
+                movePill(activeBtn);
+            };
+
+            // Bottom navigation click handler
+            navButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    const targetPageId = button.getAttribute('data-target');
+                    switchPage(targetPageId, button);
+                });
+            });
+
+
+            // ID card click-to-flip logic
+            const cardInner = document.querySelector('.flippable-card-inner');
+            if (cardInner) {
+                let currentAngle = 0;
+
+                cardInner.addEventListener('click', () => {
+                    currentAngle += 180;
+                    
+                    cardInner.style.transition = 'transform 0.5s cubic-bezier(0.25, 1, 0.5, 1)';
+                    cardInner.style.transform = `rotateY(${currentAngle}deg)`;
+
+                    const isFlipped = (currentAngle / 180) % 2 !== 0;
+                    if (isFlipped) {
+                        cardInner.classList.add('is-flipped');
+                    } else {
+                        cardInner.classList.remove('is-flipped');
+                    }
+                });
+            }
+
+            // Language switcher logic
+            const langToggleButton = document.querySelector('.profile-action-card');
+            const langDisplay = document.querySelector('.lang-btn');
+            const mobileFrame = document.querySelector('.mobile-frame');
+            let currentLang = 'en';
+
+            const translations = {
+              en: {
+                'nav-home': 'Home',
+                'nav-cards': 'Cards',
+                'nav-profile': 'Profile',
+                'header-title-home': 'Student Portal',
+                'service-discharge': 'Discharge',
+                'service-timetable': 'Timetable',
+                'service-group': 'Group and Section',
+                'service-exams-schedule': 'Exams Schedule',
+                'service-exam-grades': 'Exam Grades',
+                'service-assessment': 'Assessment',
+                'service-percentage': 'Percentage (%)',
+                'service-transcripts': 'Academic transcripts',
+                'service-debts': 'Debts',
+                'service-upload-cards': 'Upload Card Images',
+                'service-enrollments': 'Enrollments',
+                'service-restoration': 'Restoration',
+                'service-other': 'Other services',
+                'header-title-cards': 'ID Cards',
+                'header-title-profile': 'My Profile',
+                'label-pob': 'Place of Birth',
+                'label-dob': 'Date of Birth',
+                'action-change-lang': 'Change Language',
+                'logout-btn': 'LOGOUT',
+                'header-title-discharge': 'Edit Profile',
+                'label-firstname': 'First Name',
+                'label-lastname': 'Last Name',
+                'label-university': 'University',
+                'label-pob-form': 'Place of Birth',
+                'label-dob-form': 'Date of Birth',
+                'save-changes-btn': 'Save Changes',
+                'header-title-restoration': 'Change Picture',
+                'upload-prompt-text': 'Select a new photo for your profile and ID cards.',
+                'upload-avatar-btn': 'Upload New Photo',
+                'header-title-upload-cards': 'Upload Card Images',
+                'upload-student-card-prompt': 'Student Card (Front)',
+                'upload-residence-card-prompt': 'Residence Card (Back)',
+              },
+              ar: {
+                'nav-home': 'الرئيسية',
+                'nav-cards': 'البطاقات',
+                'nav-profile': 'الملف الشخصي',
+                'header-title-home': 'بوابة الطالب',
+                'service-discharge': 'براءة الذمة',
+                'service-timetable': 'جدول التوقيت',
+                'service-group': 'الفوج والفرع',
+                'service-exams-schedule': 'جدول الامتحانات',
+                'service-exam-grades': 'نقاط الإمتحان',
+                'service-assessment': 'التقييم',
+                'service-percentage': 'النسبة المئوية (%)',
+                'service-transcripts': 'كشوف النقاط',
+                'service-debts': 'الديون',
+                'service-upload-cards': 'تحميل صور البطاقات',
+                'service-enrollments': 'التسجيلات',
+                'service-restoration': 'الإطعام',
+                'service-other': 'خدمات أخرى',
+                'header-title-cards': 'بطاقات التعريف',
+                'header-title-profile': 'ملفي الشخصي',
+                'label-pob': 'مكان الميلاد',
+                'label-dob': 'تاريخ الميلاد',
+                'action-change-lang': 'تغيير اللغة',
+                'logout-btn': 'تسجيل الخروج',
+                'header-title-discharge': 'تعديل الملف الشخصي',
+                'label-firstname': 'الإسم',
+                'label-lastname': 'اللقب',
+                'label-university': 'الجامعة',
+                'label-pob-form': 'مكان الميلاد',
+                'label-dob-form': 'تاريخ الميلاد',
+                'save-changes-btn': 'حفظ التغييرات',
+                'header-title-restoration': 'تغيير الصورة',
+                'upload-prompt-text': 'اختر صورة جديدة لملفك الشخصي وبطاقات الهوية.',
+                'upload-avatar-btn': 'تحميل صورة جديدة',
+                'header-title-upload-cards': 'تحميل صور البطاقات',
+                'upload-student-card-prompt': 'بطاقة الطالب (الأمام)',
+                'upload-residence-card-prompt': 'بطاقة الإقامة (الخلف)',
+              }
+            };
+
+            const setLanguage = (lang) => {
+                currentLang = lang;
+                if (lang === 'ar') {
+                    mobileFrame.classList.add('rtl');
+                    langDisplay.textContent = 'ar-DZ';
+                } else {
+                    mobileFrame.classList.remove('rtl');
+                    langDisplay.textContent = 'en-DZ';
+                }
+
+                Object.keys(translations[lang]).forEach(key => {
+                    const element = document.getElementById(key);
+                    if (element) {
+                        element.textContent = translations[lang][key];
+                    }
+                });
+            };
+
+            if (langToggleButton) {
+                langToggleButton.addEventListener('click', () => {
+                    const newLang = currentLang === 'en' ? 'ar' : 'en';
+                    setLanguage(newLang);
+                });
+            }
+
+            // User profile data management
+            let currentUserData = {
+                firstName: 'NEDJM-EDDINE',
+                lastName: 'HACHEMAOUI',
+                university: 'université de béjaia',
+                pob: 'BEJAIA',
+                dob: '2007-11-10',
+                avatarUrl: 'https://i.ibb.co/4ZgdywFC/IMG-3557.jpg'
+            };
+
+            // تحميل صورة البروفايل فوراً لتخزينها في الكاش
+            new Image().src = currentUserData.avatarUrl;
+
+            const updateUserInfo = (user) => {
+                const fullName = `${user.lastName} ${user.firstName}`;
+                
+                // Profile Page
+                document.getElementById('profile-name').textContent = fullName;
+                document.getElementById('profile-university').textContent = user.university;
+                document.getElementById('profile-pob').textContent = user.pob;
+                document.getElementById('profile-dob').textContent = user.dob;
+                document.getElementById('profile-avatar-lg').src = user.avatarUrl;
+
+                // Header
+                document.getElementById('header-avatar-sm').src = user.avatarUrl;
+            };
+
+            // Edit profile form logic
+            const editProfileForm = document.getElementById('edit-profile-form');
+
+            const populateEditForm = () => {
+                document.getElementById('input-firstname').value = currentUserData.firstName;
+                document.getElementById('input-lastname').value = currentUserData.lastName;
+                document.getElementById('input-university').value = currentUserData.university;
+                document.getElementById('input-pob').value = currentUserData.pob;
+                document.getElementById('input-dob').value = currentUserData.dob;
+            };
+            
+            if (editProfileForm) {
+                editProfileForm.addEventListener('submit', (event) => {
+                    event.preventDefault();
+                    
+                    currentUserData = {
+                        ...currentUserData,
+                        firstName: document.getElementById('input-firstname').value,
+                        lastName: document.getElementById('input-lastname').value,
+                        university: document.getElementById('input-university').value,
+                        pob: document.getElementById('input-pob').value,
+                        dob: document.getElementById('input-dob').value,
+                    };
+
+                    updateUserInfo(currentUserData);
+                    alert('Profile updated successfully!');
+                    // Go back to home page after saving
+                    backBtnFromDischarge.dispatchEvent(new Event('click'));
+                });
+            }
+
+            // Avatar upload logic
+            const uploadAvatarBtn = document.getElementById('upload-avatar-btn');
+            const avatarUploadInput = document.getElementById('avatar-upload-input');
+
+            if (uploadAvatarBtn && avatarUploadInput) {
+                uploadAvatarBtn.addEventListener('click', () => {
+                    avatarUploadInput.click();
+                });
+
+                avatarUploadInput.addEventListener('change', (event) => {
+                    const target = event.target;
+                    if (target.files && target.files[0]) {
+                        const file = target.files[0];
+                        const reader = new FileReader();
+
+                        reader.onload = (e) => {
+                            const newAvatarUrl = e.target.result;
+                            currentUserData.avatarUrl = newAvatarUrl;
+                            updateUserInfo(currentUserData);
+                            alert('Avatar updated successfully!');
+                            backBtnFromRestoration.dispatchEvent(new Event('click'));
+                        };
+
+                        reader.readAsDataURL(file);
+                    }
+                });
+            }
+
+            // Card image upload logic
+            const uploadStudentCardBtn = document.getElementById('upload-student-card-btn');
+            const studentCardUploadInput = document.getElementById('student-card-upload-input');
+            const studentCard = document.getElementById('card-1');
+
+            const uploadResidenceCardBtn = document.getElementById('upload-residence-card-btn');
+            const residenceCardUploadInput = document.getElementById('residence-card-upload-input');
+            const residenceCard = document.getElementById('card-2');
+
+            const handleCardImageUpload = (file, cardElement) => {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const imageUrl = e.target.result;
+                    cardElement.style.backgroundImage = `url(${imageUrl})`;
+                    alert('Card image updated!');
+                };
+                reader.readAsDataURL(file);
+            };
+
+            if (uploadStudentCardBtn && studentCardUploadInput && studentCard) {
+                uploadStudentCardBtn.addEventListener('click', () => studentCardUploadInput.click());
+                studentCardUploadInput.addEventListener('change', (event) => {
+                    const target = event.target;
+                    if (target.files && target.files[0]) {
+                        handleCardImageUpload(target.files[0], studentCard);
+                    }
+                });
+            }
+
+            if (uploadResidenceCardBtn && residenceCardUploadInput && residenceCard) {
+                uploadResidenceCardBtn.addEventListener('click', () => residenceCardUploadInput.click());
+                residenceCardUploadInput.addEventListener('change', (event) => {
+                    const target = event.target;
+                    if (target.files && target.files[0]) {
+                        handleCardImageUpload(target.files[0], residenceCard);
+                    }
+                });
+            }
+
+
+            // Initialize the app with default user data and language
+            updateUserInfo(currentUserData);
+            setLanguage('ar');
+        });
+        if ('serviceWorker' in navigator) {
+          // نسجل الـ Service Worker فوراً (لا ننتظر load event لتسريع التخزين)
+          navigator.serviceWorker
+            .register('./sw.js', { scope: './' })
+            .then((registration) => {
+              console.log('✅ Service Worker مسجل بنجاح:', registration.scope);
+              // تحقق من وجود تحديث
+              registration.addEventListener('updatefound', () => {
+                const newWorker = registration.installing;
+                newWorker.addEventListener('statechange', () => {
+                  if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                    console.log('🔄 تحديث متاح، سيتم التحديث تلقائياً');
+                  }
+                });
+              });
+            })
+            .catch(err => console.log('❌ خطأ في تسجيل الـ Service Worker:', err));
+        }
+    </script>
+</body>
+</html>
