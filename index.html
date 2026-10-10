@@ -1,0 +1,2545 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+
+    <link rel="icon" href="https://i.postimg.cc/52zCNLxV/unnamed.webp" type="image/webp">
+    <link rel="apple-touch-icon" href="https://i.postimg.cc/52zCNLxV/unnamed.webp">
+    <link rel="manifest" href="manifest.json">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#009688">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>Student Portal</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-green: #009688;
+            --light-green: #26a69a;
+            --dark-blue: #363b4e;
+            --light-gray: #f4f6f9;
+            --white: #ffffff;
+            --red: #e74c3c;
+            --text-dark: #333;
+            --text-light: #7f8c8d;
+            --border-color: #ecf0f1;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        html, body {
+            height: 100%;
+            height: 100dvh; /* Dynamic viewport height - handles mobile browser bars */
+            overflow: hidden;
+        }
+
+        body {
+            font-family: 'Tajawal', 'Roboto', sans-serif;
+            background-color: #dcdcdc;
+            display: flex;
+            justify-content: center;
+            align-items: stretch;
+            height: 100dvh;
+            color: var(--text-dark);
+            overflow: hidden;
+        }
+
+        .mobile-frame {
+            width: 100%;
+            max-width: 500px;
+            height: 100dvh;
+            background-color: var(--light-gray);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            flex-shrink: 0;
+        }
+
+        /* On large screens (tablets/desktops) show it as a phone frame */
+        @media (min-width: 600px) {
+            body {
+                align-items: center;
+                background-color: var(--white);
+            }
+            .mobile-frame {
+                height: 896px;
+                max-height: 95dvh;
+                border-radius: 40px;
+                box-shadow: none;
+                border: 1px solid #eee; /* optional light border instead of shadow */
+            }
+        }
+
+        /* Pages - تنزلق أفقياً كالـ scroll بينما الـ nav ثابت */
+        .page {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            padding-bottom: 80px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            visibility: hidden;
+            pointer-events: none;
+            transform: translateX(0);
+            transition: transform 0.38s cubic-bezier(0.4, 0, 0.2, 1);
+            will-change: transform;
+        }
+
+        #home-page {
+            overflow-y: hidden;
+        }
+
+        .page.active {
+            visibility: visible;
+            pointer-events: auto;
+        }
+
+        /* Header */
+        .app-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 15px;
+            flex-shrink: 0;
+        }
+
+        .app-header h1 {
+            font-size: 26px;
+            font-weight: 700;
+            color: #4c4c4c;
+        }
+
+        .header-s {
+            color: #000000;
+            font-weight: 900;
+        }
+
+
+        .header-icons {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            font-size: 20px;
+        }
+
+        .avatar-sm {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .back-btn {
+            background: none;
+            border: none;
+            font-size: 22px;
+            color: var(--text-dark);
+            cursor: pointer;
+            padding: 5px;
+        }
+
+        .header-placeholder {
+            width: 32px; /* Match back-btn size for alignment */
+        }
+
+
+        /* Bottom Nav */
+        .bottom-nav {
+            position: absolute;
+            bottom: 26px;
+            left: 22px;
+            right: 22px;
+            background-color: var(--dark-blue);
+            display: flex;
+            justify-content: space-around;
+            padding: 0;
+            border-radius: 14px;
+            box-shadow: none; /* Removed shadow */
+            overflow: hidden;
+        }
+
+        #home-page, #cards-page {
+            background-color: var(--white);
+        }
+
+        /* Sliding green pill that moves behind the buttons */
+        .nav-pill {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            border-radius: 14px;
+            background-color: var(--primary-green);
+            transition: left 0.38s cubic-bezier(0.4, 0, 0.2, 1),
+                        width 0.38s cubic-bezier(0.4, 0, 0.2, 1);
+            will-change: left, width;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .nav-btn {
+            background: none;
+            border: none;
+            color: #9ea8b5;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            flex: 1;
+            padding: 12px 10px;
+            border-radius: 14px;
+            transition: color 0.3s ease;
+            position: relative;
+            z-index: 1;
+        }
+
+        .nav-btn i {
+            font-size: 22px;
+        }
+
+        .nav-btn.active {
+            color: var(--white);
+        }
+
+
+        /* Home Page */
+        #home-page {
+            padding-left: 15px;
+            padding-right: 15px;
+        }
+        .progres-card {
+            border-radius: 15px;
+            margin: 0 10px 5px;
+            overflow: hidden;
+            height: 100px;
+            flex-shrink: 0;
+            position: relative;
+        }
+        .banner-carousel {
+            display: flex;
+            width: 100%;
+            height: 100%;
+            overflow-x: scroll;
+            scroll-snap-type: x mandatory;
+            scroll-behavior: smooth;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+            -webkit-overflow-scrolling: touch;
+        }
+        .banner-carousel::-webkit-scrollbar {
+            display: none;
+        }
+        .progres-logo {
+            flex: 0 0 100%;
+            width: 100%;
+            height: 100%;
+            object-fit: fill;
+            scroll-snap-align: start;
+            user-select: none;
+            -webkit-user-drag: none;
+            draggable: false;
+        }
+
+
+
+        .carousel-indicators {
+            display: flex;
+            justify-content: center;
+            gap: 6px;
+            margin-bottom: 10px;
+        }
+        .indicator {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: #d1d5db;
+            transition: all 0.3s ease;
+        }
+        .indicator.active {
+            width: 16px; /* Pill shape for active dot */
+            border-radius: 4px;
+            background-color: var(--primary-green);
+        }
+
+        .services-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 6px;
+            padding: 0 15px 15px;
+            grid-auto-rows: 55px;
+        }
+        .service-btn {
+            background-color: var(--primary-green);
+            color: var(--white);
+            border: none;
+            border-radius: 8px;
+            padding: 2px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 4px; /* Space between icon and text */
+            font-size: 11px;
+            font-weight: 700;
+            cursor: pointer;
+            text-align: center;
+            transition: background-color 0.2s;
+            width: 100%;
+            height: 100%;
+        }
+
+        .service-btn:hover {
+            background-color: #00897b; /* slightly darker green on hover */
+        }
+
+        .service-btn i {
+            font-size: 16px;
+            width: 20px;
+        }
+        .service-btn.full-width {
+            grid-column: 1 / -1;
+        }
+        
+        /* Scrollable content areas for other pages */
+        #discharge-page .discharge-content,
+        #restoration-page .page-content-centered,
+        #upload-cards-page .page-content-centered {
+            flex: 1;
+            overflow-y: auto;
+            min-height: 0;
+        }
+
+        /* Discharge Page / Edit Form */
+        .discharge-content {
+            padding: 10px 20px 20px;
+        }
+
+        .edit-profile-form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group label {
+            font-size: 14px;
+            color: var(--text-light);
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        .form-group input {
+            border: 1px solid var(--border-color);
+            background-color: var(--white);
+            border-radius: 10px;
+            padding: 14px;
+            font-size: 16px;
+            font-family: 'Tajawal', 'Roboto', sans-serif;
+            outline: none;
+            transition: border-color 0.2s;
+            width: 100%;
+        }
+        .form-group input:focus {
+            border-color: var(--primary-green);
+        }
+
+        .save-btn {
+            background-color: var(--primary-green);
+            color: var(--white);
+            border: none;
+            border-radius: 12px;
+            padding: 16px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            margin-top: 10px;
+        }
+
+        .save-btn:hover {
+            background-color: var(--light-green);
+        }
+
+
+        /* Restoration Page & Upload Cards Page */
+        .page-content-centered {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 20px;
+            gap: 20px;
+        }
+
+        .huge-icon {
+            font-size: 80px;
+            color: var(--primary-green);
+            opacity: 0.5;
+        }
+
+        .page-content-centered p {
+            font-size: 16px;
+            color: var(--text-light);
+            max-width: 300px;
+        }
+
+        .action-btn {
+            background-color: var(--primary-green);
+            color: var(--white);
+            border: none;
+            border-radius: 12px;
+            padding: 16px 32px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            margin-top: 10px;
+            width: 100%;
+            max-width: 300px;
+        }
+
+        .action-btn:hover {
+            background-color: var(--light-green);
+        }
+
+        .upload-section {
+            width: 100%;
+            max-width: 300px;
+            text-align: center;
+        }
+
+        .upload-section p {
+            font-size: 16px;
+            color: var(--text-dark);
+            margin-bottom: 10px;
+            font-weight: 500;
+        }
+
+
+        /* Cards Page - Flippable Card */
+        .flippable-card-container {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            perspective: 1000px;
+        }
+
+        .flippable-card-inner {
+            position: relative;
+            width: 100%;
+            max-width: 360px;
+            aspect-ratio: 360 / 600;
+            transition: transform 0.8s;
+            transform-style: preserve-3d;
+            cursor: pointer;
+            touch-action: none; /* يمنع تداخل التمرير الطبيعي مع السحب */
+        }
+
+        .flippable-card-inner.is-flipped {
+            transform: rotateY(180deg);
+        }
+
+        .id-card {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
+            
+            background-color: var(--white);
+            border-radius: 15px;
+            box-shadow: none; /* Removed shadow */
+            padding: 0; /* Remove padding to let background fill completely */
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            direction: rtl; /* For Arabic text */
+            background-size: 100% 100%;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
+
+        .flippable-card-back {
+            transform: rotateY(180deg);
+        }
+
+        .id-card-header {
+            display: flex;
+            justify-content: center;
+            text-align: center;
+            margin-bottom: 20px;
+            align-items: center;
+            gap: 15px;
+        }
+        .gov-text {
+            font-size: 11px;
+            line-height: 1.5;
+            font-weight: 500;
+        }
+        .onou-logo {
+            width: 50px;
+            height: 50px;
+        }
+
+        .id-card-body {
+            display: flex;
+            gap: 15px;
+            flex: 1;
+        }
+        .id-card-main-content {
+            flex: 1;
+        }
+        .card-title {
+            font-size: 22px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            color: var(--primary-green);
+        }
+        .info-grid {
+            display: grid;
+            grid-template-columns: auto 1fr;
+            gap: 10px 15px;
+            font-size: 13px;
+        }
+        .info-grid span:nth-child(odd) {
+            font-weight: 500;
+            color: var(--text-light);
+        }
+        .id-card-sidebar {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+        }
+        .student-photo {
+            width: 80px;
+            height: 100px;
+            border-radius: 8px;
+            object-fit: cover;
+            border: 3px solid var(--border-color);
+        }
+        .qr-code {
+            width: 90px;
+            height: 90px;
+        }
+
+        .id-card-footer {
+          margin-top: auto;
+          padding-top: 15px;
+          font-size: 11px;
+          text-align: center;
+          font-weight: 500;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          direction: ltr;
+        }
+
+        /* Profile Page */
+        #profile-page .profile-content {
+            padding: 0 20px 20px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+            min-height: 0;
+            background-color: #f8f9fa; /* Light background for the whole page */
+        }
+        
+        .new-profile-header {
+            background: var(--white);
+            border-radius: 0 0 25px 25px;
+            padding: 30px 20px 20px;
+            margin: 0 -20px 20px; /* Stretch to edges */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            box-shadow: none;
+        }
+        
+        .new-profile-header .avatar-lg {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid #eee;
+            margin-bottom: 15px;
+        }
+        
+        .new-profile-header #profile-name {
+            font-size: 22px;
+            font-weight: 700;
+            color: #222;
+            margin: 0 0 5px;
+            text-align: center;
+        }
+        
+        .new-profile-header #profile-university {
+            font-size: 14px;
+            color: #888;
+            margin: 0;
+            text-align: center;
+        }
+
+        .new-card {
+            background-color: var(--white);
+            border-radius: 16px;
+            padding: 15px 20px;
+            margin-bottom: 15px;
+            border: 1px solid #f0f0f0;
+            box-shadow: none;
+        }
+        
+        .detail-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .detail-item i {
+            font-size: 20px;
+            color: var(--primary-green);
+            width: 25px;
+            text-align: center;
+        }
+        
+        .detail-item div {
+            text-align: right;
+        }
+        
+        .detail-label {
+            font-size: 12px;
+            color: #888;
+            margin: 0 0 4px;
+        }
+        
+        .detail-value {
+            font-size: 15px;
+            font-weight: 700;
+            color: #333;
+            margin: 0;
+        }
+        
+        .profile-details-card.new-card hr {
+            border: none;
+            height: 1px;
+            background-color: #f0f0f0;
+            margin: 15px 0;
+        }
+
+        .profile-action-card.new-card {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .action-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .action-item i {
+            font-size: 20px;
+            color: var(--primary-green);
+        }
+        
+        .lang-btn-new {
+            background: transparent;
+            border: 1.5px solid var(--primary-green);
+            color: var(--primary-green);
+            border-radius: 10px;
+            padding: 6px 14px;
+            font-weight: 700;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        .logout-btn.new-logout {
+            background-color: #e53935;
+            color: var(--white);
+            border: none;
+            border-radius: 12px;
+            padding: 14px;
+            font-size: 16px;
+            font-weight: 700;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            width: 100%;
+            margin-top: 5px;
+            cursor: pointer;
+        }
+        
+        .profile-footer-link {
+            text-align: center;
+            margin-top: 15px;
+        }
+        
+        .profile-footer-link a {
+            color: var(--primary-green);
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+
+        .logout-btn:hover {
+            background-color: #c0392b;
+        }
+
+        /* RTL Styles */
+        .mobile-frame.rtl {
+            direction: rtl;
+        }
+
+        .mobile-frame.rtl .app-header {
+            /* direction:rtl already handles the order */
+        }
+
+        .mobile-frame.rtl .profile-info,
+        .mobile-frame.rtl .detail-item > div {
+            text-align: right;
+        }
+
+        .mobile-frame.rtl .id-card-footer {
+            direction: rtl;
+        }
+
+        .mobile-frame.rtl .form-group label {
+            text-align: right;
+        }
+
+        /* Bottom nav pill shape like image */
+        .bottom-nav {
+            justify-content: space-between;
+        }
+
+        /* Make Arabic title look correct */
+        #header-title-home {
+            font-size: 22px;
+            font-weight: 700;
+            color: #222;
+        }
+        /* Splash Screen */
+        #splash-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #dcdcdc;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            opacity: 1;
+            transition: opacity 0.3s ease;
+        }
+
+        #splash-screen.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        #splash-screen img {
+            width: 100%;
+            max-width: 380px;
+            object-fit: contain;
+        }
+
+        /* =====================
+           Day / Night Theme
+           ===================== */
+        #home-page .app-header {
+            padding: 14px 15px 12px;
+        }
+
+        .theme-toggle {
+            background: none;
+            border: none;
+            width: 36px;
+            height: 36px;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: #111;
+            padding: 0;
+            transition: transform 0.35s ease, color 0.3s ease;
+        }
+
+        .theme-toggle:active {
+            transform: scale(0.85) rotate(-20deg);
+        }
+
+        .theme-toggle svg {
+            width: 26px;
+            height: 26px;
+        }
+
+        .theme-toggle .icon-sun { display: none; }
+        .theme-toggle .icon-moon { display: block; }
+
+        #home-page,
+        #cards-page,
+        #header-title-home,
+        .indicator {
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        /* Light mode (like screenshot) */
+        #home-page, #cards-page {
+            background-color: #f2f2f7;
+        }
+
+        /* Dark mode */
+        body.dark-mode {
+            background-color: #121217;
+        }
+
+        body.dark-mode .mobile-frame {
+            background-color: #121217;
+            border-color: #121217;
+        }
+
+        body.dark-mode #home-page,
+        body.dark-mode #cards-page,
+        body.dark-mode #profile-page .profile-content {
+            background-color: #121217;
+        }
+
+        body.dark-mode #header-title-home {
+            color: #ffffff;
+        }
+
+        body.dark-mode .theme-toggle {
+            color: #ffffff;
+        }
+
+        body.dark-mode .theme-toggle .icon-sun { display: block; }
+        body.dark-mode .theme-toggle .icon-moon { display: none; }
+
+        body.dark-mode .indicator {
+            background-color: #c7c7cc;
+        }
+
+        body.dark-mode .indicator.active {
+            background-color: var(--primary-green);
+        }
+
+        body.dark-mode .new-profile-header,
+        body.dark-mode .new-card {
+            background-color: #1c1c22;
+            border-color: #26262e;
+        }
+
+        body.dark-mode .new-profile-header #profile-name,
+        body.dark-mode .detail-value {
+            color: #ffffff;
+        }
+
+        body.dark-mode .profile-details-card.new-card hr {
+            background-color: #2c2c34;
+        }
+
+        /* =====================
+           Enrollments Page (تسجيلاتي)
+           ===================== */
+        #enrollments-page {
+            z-index: 10; /* يغطي شريط التنقل السفلي كما في الصورة */
+            padding-bottom: 0;
+            background-color: #f4f5f8;
+        }
+
+        .enr-header {
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 84px;
+            padding: 0 20px;
+            background: linear-gradient(180deg, #0b9b7b 0%, #079074 100%);
+            flex-shrink: 0;
+        }
+
+        .enr-header h1 {
+            color: #fff;
+            font-size: 21px;
+            font-weight: 700;
+            margin: 0;
+        }
+
+        .enr-back {
+            position: absolute;
+            right: 18px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            border: none;
+            background-color: rgba(255, 255, 255, 0.22);
+            color: #fff;
+            font-size: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: background-color 0.2s, transform 0.2s;
+        }
+
+        .enr-back:active {
+            transform: translateY(-50%) scale(0.92);
+            background-color: rgba(255, 255, 255, 0.32);
+        }
+
+        .enr-content {
+            flex: 1;
+            overflow-y: auto;
+            min-height: 0;
+            padding: 18px 18px 30px;
+        }
+
+        /* Current enrollment card */
+        .enr-current {
+            position: relative;
+            overflow: hidden;
+            border-radius: 22px;
+            padding: 16px 16px 16px;
+            color: #fff;
+            background: linear-gradient(135deg, #079a77 0%, #0cb58d 50%, #14d6a8 100%);
+        }
+
+        .enr-current::before,
+        .enr-current::after {
+            content: '';
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.07);
+            pointer-events: none;
+        }
+
+        .enr-current::before {
+            width: 150px;
+            height: 150px;
+            top: -70px;
+            right: -40px;
+        }
+
+        .enr-current::after {
+            width: 120px;
+            height: 120px;
+            bottom: -60px;
+            left: -45px;
+        }
+
+        .enr-current > * {
+            position: relative;
+            z-index: 1;
+        }
+
+        .enr-year {
+            display: flex;
+            justify-content: flex-start;
+        }
+
+        .enr-year span {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 14px;
+            padding: 6px 11px;
+            font-size: 13px;
+            font-weight: 700;
+            font-family: 'Roboto', 'Tajawal', sans-serif;
+        }
+
+        .enr-year i {
+            font-size: 12px;
+        }
+
+        .enr-title-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .enr-title-row h2 {
+            font-size: 17px;
+            font-weight: 700;
+            margin: 0;
+        }
+
+        .enr-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 30px;
+            height: 26px;
+            padding: 0 6px;
+            border-radius: 7px;
+            font-size: 12px;
+            font-weight: 700;
+            font-family: 'Roboto', sans-serif;
+            background: rgba(255, 255, 255, 0.22);
+            color: #fff;
+        }
+
+        .enr-sub {
+            font-size: 13px;
+            opacity: 0.75;
+            margin: 6px 0 0;
+        }
+
+        .enr-divider {
+            height: 1px;
+            background: rgba(255, 255, 255, 0.25);
+            margin: 14px 0 12px;
+        }
+
+        .enr-uni {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        .enr-icon-box {
+            width: 32px;
+            height: 32px;
+            border-radius: 9px;
+            background: rgba(255, 255, 255, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+        }
+
+        .enr-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .enr-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 18px;
+            padding: 8px 12px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .enr-chip i {
+            font-size: 11px;
+        }
+
+        /* Previous enrollments */
+        .enr-section-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 24px 0 14px;
+        }
+
+        .enr-section-title .enr-hist-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: #e9ebf0;
+            color: #4a4f5c;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+        }
+
+        .enr-section-title h3 {
+            font-size: 16px;
+            font-weight: 700;
+            color: #3a3f4b;
+            margin: 0;
+        }
+
+        .enr-prev {
+            background: #fff;
+            border-radius: 16px;
+            border-right: 4px solid #3b6fe0;
+            overflow: hidden;
+            margin-bottom: 12px;
+        }
+
+        .enr-prev-head {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 16px 14px 16px 16px;
+            cursor: pointer;
+        }
+
+        .enr-prev-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 14px;
+            background: #ebf1fd;
+            color: #2f64d6;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            flex-shrink: 0;
+        }
+
+        .enr-prev-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .enr-prev-info .enr-title-row {
+            margin-top: 0;
+        }
+
+        .enr-prev-info h4 {
+            font-size: 15px;
+            font-weight: 700;
+            color: #1d2130;
+            margin: 0;
+        }
+
+        .enr-prev-info .enr-badge {
+            background: #ebf1fd;
+            color: #2f64d6;
+            height: 24px;
+            min-width: 28px;
+            font-size: 11px;
+        }
+
+        .enr-prev-info p {
+            font-size: 12px;
+            color: #8a8f9c;
+            margin: 6px 0 0;
+        }
+
+        .enr-chevron {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: #f1f2f5;
+            color: #4a4f5c;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 13px;
+            flex-shrink: 0;
+            transition: transform 0.3s ease;
+        }
+
+        .enr-prev.open .enr-chevron {
+            transform: rotate(180deg);
+        }
+
+        .enr-prev-body {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.35s ease;
+        }
+
+        .enr-prev.open .enr-prev-body {
+            max-height: 200px;
+        }
+
+        .enr-prev-body-inner {
+            border-top: 1px solid #f0f1f4;
+            padding: 12px 16px 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            font-size: 13px;
+            color: #4a4f5c;
+        }
+
+        .enr-prev-body-inner div {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .enr-prev-body-inner i {
+            color: #2f64d6;
+            width: 16px;
+            text-align: center;
+        }
+
+        /* Enrollments - dark mode */
+        body.dark-mode #enrollments-page { background-color: #121217; }
+        body.dark-mode .enr-prev { background: #1c1c22; }
+        body.dark-mode .enr-prev-info h4 { color: #fff; }
+        body.dark-mode .enr-section-title h3 { color: #e6e6ea; }
+        body.dark-mode .enr-section-title .enr-hist-icon,
+        body.dark-mode .enr-chevron { background: #2a2a32; color: #d0d0d6; }
+        body.dark-mode .enr-prev-icon,
+        body.dark-mode .enr-prev-info .enr-badge { background: #1f2a44; color: #7ea3ff; }
+        body.dark-mode .enr-prev-body-inner { border-top-color: #2a2a32; color: #c7c7cc; }
+
+        /* =====================
+           Timetable Page (الجدول الزمني)
+           ===================== */
+        #timetable-page {
+            z-index: 10;
+            padding-bottom: 0;
+            background-color: #f4f5f8;
+        }
+
+        .tt-header {
+            background-color: #0a9a78;
+            flex-shrink: 0;
+            padding-bottom: 14px;
+        }
+
+        .tt-header .enr-header {
+            background: none;
+        }
+
+        .tt-semesters {
+            display: flex;
+            justify-content: center;
+            gap: 18px;
+            padding: 0 20px;
+        }
+
+        .tt-sem-btn {
+            background: transparent;
+            border: 2px solid #ffffff;
+            color: #ffffff;
+            border-radius: 24px;
+            padding: 9px 18px;
+            font-family: 'Tajawal', sans-serif;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.2s, transform 0.15s;
+        }
+
+        .tt-sem-btn:active {
+            transform: scale(0.96);
+            background-color: rgba(255, 255, 255, 0.15);
+        }
+
+        .tt-days {
+            display: flex;
+            gap: 12px;
+            padding: 12px 16px;
+            background-color: #ffffff;
+            overflow-x: auto;
+            scrollbar-width: none;
+            flex-shrink: 0;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+            position: relative;
+            z-index: 1;
+        }
+
+        .tt-days::-webkit-scrollbar { display: none; }
+
+        .tt-day {
+            flex-shrink: 0;
+            background: #ffffff;
+            border: 1px solid #e3e5ea;
+            color: #6b7080;
+            border-radius: 24px;
+            padding: 13px 16px;
+            font-family: 'Tajawal', sans-serif;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background-color 0.25s, color 0.25s, border-color 0.25s;
+        }
+
+        .tt-day.active {
+            background-color: #0a9a78;
+            border-color: #0a9a78;
+            color: #ffffff;
+        }
+
+        .tt-body {
+            flex: 1;
+            min-height: 0;
+            overflow-y: auto;
+            background-color: #f4f5f8;
+        }
+
+        .tt-empty {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 16px;
+            padding-top: 130px;
+            animation: ttFade 0.3s ease;
+        }
+
+        .tt-empty i {
+            font-size: 62px;
+            color: #6b6f7c;
+        }
+
+        .tt-empty p {
+            font-size: 16px;
+            font-weight: 700;
+            color: #5a5e6b;
+            margin: 0;
+        }
+
+        @keyframes ttFade {
+            from { opacity: 0; transform: translateY(6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        body.dark-mode #timetable-page,
+        body.dark-mode .tt-body { background-color: #121217; }
+        body.dark-mode .tt-days { background-color: #1a1a20; }
+        body.dark-mode .tt-day:not(.active) { background: #1a1a20; border-color: #2e2e36; color: #b8bcc6; }
+        body.dark-mode .tt-empty i,
+        body.dark-mode .tt-empty p { color: #a0a4ae; }
+    </style>
+    <script>
+        // تطبيق الوضع المحفوظ قبل عرض الصفحة لتفادي الوميض
+        (function () {
+            try {
+                if (localStorage.getItem('theme') === 'dark') {
+                    document.documentElement.classList.add('dark-pending');
+                }
+            } catch (e) {}
+        })();
+    </script>
+</head>
+<body>
+    <script>
+        if (document.documentElement.classList.contains('dark-pending')) {
+            document.body.classList.add('dark-mode');
+            document.querySelector('meta[name="theme-color"]').setAttribute('content', '#121217');
+        }
+    </script>
+
+    <div class="mobile-frame rtl">
+
+        <!-- Splash Screen -->
+        <div id="splash-screen">
+            <img src="https://i.ibb.co/LXv6wX3z/image.png" alt="PROGRES" draggable="false">
+        </div>
+
+        <main id="home-page" class="page active">
+            <header class="app-header">
+                <h1 id="header-title-home" style="text-align: right; margin: 0;">بوابة الطالب</h1>
+                <button class="theme-toggle" id="theme-toggle-btn" aria-label="تبديل الوضع الليلي">
+                    <!-- Moon with star (shown in light mode) -->
+                    <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M20.5 14.5A8.5 8.5 0 0 1 9.5 3.5a8.5 8.5 0 1 0 11 11z"/>
+                        <path d="M17 3.5v3M15.5 5h3" stroke-width="1.6"/>
+                    </svg>
+                    <!-- Sun (shown in dark mode) -->
+                    <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
+                        <circle cx="12" cy="12" r="4.6" fill="currentColor" stroke="none"/>
+                        <path d="M12 1.8v2.4M12 19.8v2.4M1.8 12h2.4M19.8 12h2.4M4.8 4.8l1.7 1.7M17.5 17.5l1.7 1.7M4.8 19.2l1.7-1.7M17.5 6.5l1.7-1.7"/>
+                    </svg>
+                </button>
+            </header>
+
+            <section class="progres-card">
+                <div class="banner-carousel" id="banner-carousel">
+                    <img src="https://i.ibb.co/4gTfs7pz/IMG-3567.jpg" alt="Progres Banner 1" class="progres-logo" draggable="false">
+                    <img src="https://i.ibb.co/KpbyXPgL/IMG-3545.jpg" alt="Progres Banner 2" class="progres-logo" draggable="false">
+                </div>
+            </section>
+
+            <div class="carousel-indicators" id="banner-indicators">
+                <div class="indicator active"></div>
+                <div class="indicator"></div>
+            </div>
+
+
+            <section class="services-grid">
+                <!-- Row 1 (RTL so Right is first child) -->
+                <button class="service-btn" id="goto-timetable-btn"><i class="fa-regular fa-calendar-alt"></i><span>الجدول الزمني</span></button>
+                <button class="service-btn" id="goto-discharge-btn"><i class="fa-solid fa-file-alt"></i><span>التبرئة الإلكترونية</span></button>
+                
+                <!-- Row 2 -->
+                <button class="service-btn"><i class="fa-regular fa-calendar-check"></i><span>الجدول الزمني للإمتحانات</span></button>
+                <button class="service-btn"><i class="fa-solid fa-user-group"></i><span>المجموعة و الفوج</span></button>
+                
+                <!-- Row 3 -->
+                <button class="service-btn"><i class="fa-solid fa-pen"></i><span>التقييم المستمر</span></button>
+                <button class="service-btn"><i class="fa-solid fa-graduation-cap"></i><span>علامات الامتحانات</span></button>
+                
+                <!-- Row 4 -->
+                <button class="service-btn"><i class="fa-solid fa-folder"></i><span>كشف النقاط</span></button>
+                <button class="service-btn"><i class="fa-solid fa-chart-pie"></i><span>النسبة المئوية للمقاييس</span></button>
+                
+                <!-- Row 5 -->
+                <button class="service-btn"><i class="fa-solid fa-file"></i><span>عطلة أكاديمية</span></button>
+                <button class="service-btn"><i class="fa-solid fa-calculator"></i><span>الديون</span></button>
+                
+                <!-- Row 6 -->
+                <button class="service-btn"><i class="fa-solid fa-circle-exclamation"></i><span>الغيابات و الإقصاءات</span></button>
+                <button class="service-btn" id="goto-enrollments-btn"><i class="fa-solid fa-inbox"></i><span>تسجيلاتي</span></button>
+                
+                <!-- Row 7 -->
+                <button class="service-btn"><i class="fa-solid fa-table-cells"></i><span>خدمات أخرى</span></button>
+                <button class="service-btn" id="goto-restoration-btn"><i class="fa-solid fa-building"></i><span>خدمات جامعية</span></button>
+            </section>
+        </main>
+
+        <main id="unavailable-page" class="page">
+            <header class="app-header" style="background-color: var(--primary-green); padding: 15px 20px;">
+                <button class="back-btn unavailable-back-btn" style="background-color: rgba(255, 255, 255, 0.2); width: 40px; height: 40px; border-radius: 50%; color: var(--white); display: flex; align-items: center; justify-content: center;"><i class="fas fa-arrow-right"></i></button>
+                <h1 id="header-title-unavailable" style="color: var(--white); font-size: 20px; font-weight: 700; margin: 0; text-align: center; flex: 1; margin-left: 40px;">العنوان</h1>
+            </header>
+            <section class="page-content-centered" style="flex: 1; background-color: #f8f9fa;">
+                <svg width="280" height="210" viewBox="0 0 400 300" fill="none" xmlns="http://www.w3.org/2000/svg" style="margin-bottom: 20px;">
+                    <!-- Shelf -->
+                    <g id="shelf" fill="#E6E9EB">
+                        <rect x="220" y="70" width="80" height="4" />
+                        <rect x="235" y="74" width="4" height="15" />
+                        <rect x="275" y="74" width="4" height="15" />
+                        <!-- Books on shelf -->
+                        <rect x="225" y="55" width="8" height="15" />
+                        <rect x="235" y="45" width="10" height="25" />
+                        <rect x="247" y="50" width="18" height="20" />
+                        <rect x="267" y="40" width="8" height="30" />
+                        <rect x="277" y="50" width="12" height="20" />
+                        <rect x="249" y="52" width="5" height="5" fill="#FFFFFF"/>
+                    </g>
+
+                    <!-- Plant -->
+                    <g id="plant" fill="#E6E9EB">
+                        <!-- Pot -->
+                        <polygon points="65,240 105,240 100,210 70,210" />
+                        <rect x="65" y="206" width="40" height="4" />
+                        <!-- Leaves -->
+                        <ellipse cx="65" cy="155" rx="8" ry="25" transform="rotate(-35 65 155)" />
+                        <ellipse cx="85" cy="140" rx="9" ry="30" />
+                        <ellipse cx="105" cy="165" rx="7" ry="22" transform="rotate(35 105 165)" />
+                    </g>
+
+                    <!-- Background Grey Boxes -->
+                    <g id="bg-boxes" fill="#ECEEEF">
+                        <!-- Left box -->
+                        <rect x="130" y="180" width="45" height="60" />
+                        <rect x="135" y="210" width="5" height="5" fill="#FFFFFF"/>
+                        <!-- Right boxes -->
+                        <rect x="245" y="160" width="55" height="80" />
+                        <rect x="285" y="225" width="6" height="6" fill="#FFFFFF"/>
+                    </g>
+
+                    <!-- Spring -->
+                    <g id="spring">
+                        <path d="M200 95 
+                                 C 170 85, 170 55, 200 70 
+                                 C 230 85, 230 55, 200 60 
+                                 C 170 65, 170 35, 200 50 
+                                 C 230 65, 230 35, 200 40 
+                                 C 170 45, 170 15, 200 30" 
+                              stroke="#889092" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+                    </g>
+
+                    <!-- Bottom Green Box -->
+                    <g id="bottom-box">
+                        <!-- Base Box -->
+                        <rect x="155" y="150" width="90" height="90" fill="#215951" />
+                        <!-- Right half shading -->
+                        <rect x="200" y="150" width="45" height="90" fill="#1C4F48" />
+                        <!-- Dark Tape -->
+                        <rect x="180" y="150" width="10" height="15" fill="#153631" />
+                        <rect x="180" y="225" width="10" height="15" fill="#153631" />
+                        <!-- White Square -->
+                        <rect x="230" y="222" width="7" height="7" fill="#FFFFFF" />
+                    </g>
+
+                    <!-- Top Green Box -->
+                    <g id="top-box">
+                        <!-- Inside -->
+                        <polygon points="160,105 240,105 220,80 180,80" fill="#19443D" />
+                        
+                        <!-- Left Flap -->
+                        <polygon points="160,105 180,80 140,80 150,105" fill="#1F5A51" />
+                        
+                        <!-- Right Flap -->
+                        <polygon points="240,105 220,80 260,80 250,105" fill="#1F5A51" />
+                        
+                        <!-- Box Front -->
+                        <rect x="160" y="105" width="80" height="65" fill="#297A6B" />
+                        
+                        <!-- White Square -->
+                        <rect x="226" y="152" width="7" height="7" fill="#FFFFFF" />
+                        
+                        <!-- Sad Face -->
+                        <circle cx="185" cy="125" r="2.5" fill="#153631" />
+                        <circle cx="215" cy="125" r="2.5" fill="#153631" />
+                        <path d="M185 140 Q 200 130 215 140" stroke="#153631" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+                    </g>
+                </svg>
+                <h2 style="font-size: 22px; font-weight: 700; color: #111;">عذرا ، انت غير معني</h2>
+            </section>
+        </main>
+
+        <!-- Timetable Page (الجدول الزمني) -->
+        <main id="timetable-page" class="page">
+            <div class="tt-header">
+                <header class="enr-header">
+                    <button class="enr-back" id="timetable-back-btn" aria-label="رجوع"><i class="fas fa-arrow-right"></i></button>
+                    <h1>الجدول الزمني</h1>
+                </header>
+                <div class="tt-semesters">
+                    <button class="tt-sem-btn" data-sem="2">السداسي الثاني</button>
+                    <button class="tt-sem-btn" data-sem="1">السداسي الأول</button>
+                </div>
+            </div>
+
+            <nav class="tt-days" id="tt-days">
+                <button class="tt-day active">السبت</button>
+                <button class="tt-day">الأحد</button>
+                <button class="tt-day">الأثنين</button>
+                <button class="tt-day">الثلاثاء</button>
+                <button class="tt-day">الأربعاء</button>
+                <button class="tt-day">الخميس</button>
+            </nav>
+
+            <section class="tt-body">
+                <div class="tt-empty" id="tt-empty">
+                    <i class="fa-solid fa-calendar"></i>
+                    <p>لا توجد حصص لهذا اليوم</p>
+                </div>
+            </section>
+        </main>
+
+        <!-- Enrollments Page (تسجيلاتي) -->
+        <main id="enrollments-page" class="page">
+            <header class="enr-header">
+                <button class="enr-back" id="enrollments-back-btn" aria-label="رجوع"><i class="fas fa-arrow-right"></i></button>
+                <h1>تسجيلاتي</h1>
+            </header>
+
+            <section class="enr-content">
+                <!-- Current enrollment -->
+                <article class="enr-current">
+                    <div class="enr-year">
+                        <span><i class="fa-regular fa-calendar"></i>2026/2027</span>
+                    </div>
+                    <div class="enr-title-row">
+                        <h2>الليسانس</h2>
+                        <span class="enr-badge">L1</span>
+                    </div>
+                    <p class="enr-sub">الليسانس</p>
+                    <div class="enr-divider"></div>
+                    <div class="enr-uni">
+                        <span class="enr-icon-box"><i class="fa-solid fa-building-columns"></i></span>
+                        <span>جامعة بجاية</span>
+                    </div>
+                    <div class="enr-chips">
+                        <span class="enr-chip"><i class="fa-solid fa-sitemap"></i>علوم الطبيعة و الحياة</span>
+                        <span class="enr-chip"><i class="fa-solid fa-code-branch"></i>علوم الطبيعة والحياة</span>
+                    </div>
+                </article>
+
+                <!-- Previous enrollments -->
+                <div class="enr-section-title">
+                    <span class="enr-hist-icon"><i class="fa-solid fa-clock-rotate-left"></i></span>
+                    <h3>التسجيلات السابقة</h3>
+                </div>
+
+                <article class="enr-prev">
+                    <div class="enr-prev-head">
+                        <span class="enr-prev-icon"><i class="fa-solid fa-graduation-cap"></i></span>
+                        <div class="enr-prev-info">
+                            <div class="enr-title-row">
+                                <h4>الليسانس</h4>
+                                <span class="enr-badge">L1</span>
+                            </div>
+                            <p>الليسانس • 2025/2026</p>
+                        </div>
+                        <span class="enr-chevron"><i class="fa-solid fa-chevron-down"></i></span>
+                    </div>
+                    <div class="enr-prev-body">
+                        <div class="enr-prev-body-inner">
+                            <div><i class="fa-solid fa-building-columns"></i><span>جامعة بجاية</span></div>
+                            <div><i class="fa-solid fa-sitemap"></i><span>علوم الطبيعة و الحياة</span></div>
+                            <div><i class="fa-solid fa-code-branch"></i><span>علوم الطبيعة والحياة</span></div>
+                        </div>
+                    </div>
+                </article>
+            </section>
+        </main>
+
+        <!-- University Services Page -->
+        <main id="university-services-page" class="page">
+            <header class="app-header" style="background-color: var(--primary-green); padding: 15px 20px;">
+                <button class="back-btn back-to-home" style="background-color: rgba(255, 255, 255, 0.2); width: 40px; height: 40px; border-radius: 50%; color: var(--white); display: flex; align-items: center; justify-content: center;"><i class="fas fa-arrow-right"></i></button>
+                <h1 style="color: var(--white); font-size: 20px; font-weight: 700; margin: 0; text-align: center; flex: 1; margin-left: 40px;">خدمات جامعية</h1>
+            </header>
+            <section class="page-content" style="flex: 1; background-color: #f8f9fa; padding: 20px; display: flex; gap: 15px;">
+                <!-- Teal Card (Transport) -->
+                <div id="goto-transport-btn" style="flex: 1; background-color: #52c4b9; border-radius: 20px; padding: 20px; color: white; display: flex; flex-direction: column; cursor: pointer; height: 200px;">
+                    <div style="background-color: rgba(255,255,255,0.2); width: 45px; height: 45px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px; margin-bottom: 25px;">
+                        <i class="fa-solid fa-bus"></i>
+                    </div>
+                    <h3 style="font-size: 18px; font-weight: 700; margin: 0 0 10px;">مخطط النقل</h3>
+                    <p style="font-size: 12px; margin: 0; opacity: 0.9; line-height: 1.4;">الحافلات، المواعيد،<br>المسارات</p>
+                </div>
+                <!-- Orange Card (Catering) -->
+                <div id="goto-catering-btn" style="flex: 1; background-color: #ff6b2b; border-radius: 20px; padding: 20px; color: white; display: flex; flex-direction: column; cursor: pointer; height: 200px;">
+                    <div style="background-color: rgba(255,255,255,0.2); width: 45px; height: 45px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px; margin-bottom: 25px;">
+                        <i class="fa-solid fa-utensils"></i>
+                    </div>
+                    <h3 style="font-size: 18px; font-weight: 700; margin: 0 0 10px;">الإطعام</h3>
+                    <p style="font-size: 12px; margin: 0; opacity: 0.9; line-height: 1.4;">قائمة الطعام، الحجز</p>
+                </div>
+            </section>
+        </main>
+
+        <!-- Transport Page -->
+        <main id="transport-page" class="page">
+            <header class="app-header" style="background-color: var(--primary-green); padding: 15px 20px;">
+                <button class="back-btn back-to-univ" style="background-color: rgba(255, 255, 255, 0.2); width: 40px; height: 40px; border-radius: 50%; color: var(--white); display: flex; align-items: center; justify-content: center;"><i class="fas fa-arrow-right"></i></button>
+                <h1 style="color: var(--white); font-size: 20px; font-weight: 700; margin: 0; text-align: center; flex: 1;">مخطط النقل</h1>
+                <button style="background: none; border: none; color: white; font-size: 20px; width: 40px; text-align: left;"><i class="fa-regular fa-bell"></i></button>
+            </header>
+            
+            <div style="background-color: #f8f9fa; padding: 15px 20px;">
+                <div style="background-color: white; border-radius: 25px; padding: 12px 20px; display: flex; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.05); gap: 10px;">
+                    <i class="fa-solid fa-magnifying-glass" style="color: #999;"></i>
+                    <input type="text" placeholder="ابحث عن وجهتك" style="border: none; outline: none; width: 100%; font-family: inherit; font-size: 15px; color: #333; background: transparent;">
+                </div>
+            </div>
+
+            <section class="page-content" style="flex: 1; background-color: #f8f9fa; padding: 0 20px 20px; overflow-y: auto;">
+                <!-- List Items -->
+                <div class="transport-item" style="background: white; border-radius: 12px; padding: 15px; display: flex; align-items: center; margin-bottom: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.02); gap: 15px;">
+                    <div style="background-color: #0d8a70; color: white; width: 45px; height: 45px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0;">
+                        <i class="fa-solid fa-bus"></i>
+                    </div>
+                    <div style="flex: 1;">
+                        <h4 style="margin: 0 0 5px; font-size: 15px; font-weight: 700; color: #222;">القصر ثارقة اوزمور</h4>
+                        <p style="margin: 0; font-size: 12px; color: #888;">القطب ثارقة اوزمور &larr; القصر</p>
+                    </div>
+                    <div style="display: flex; flex-direction: column; align-items: center; justify-content: space-between; height: 40px;">
+                        <i class="fa-regular fa-star" style="color: #999; font-size: 16px;"></i>
+                        <i class="fa-solid fa-chevron-left" style="color: #ccc; font-size: 14px;"></i>
+                    </div>
+                </div>
+
+                <div class="transport-item" style="background: white; border-radius: 12px; padding: 15px; display: flex; align-items: center; margin-bottom: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.02); gap: 15px;">
+                    <div style="background-color: #0d8a70; color: white; width: 45px; height: 45px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0;">
+                        <i class="fa-solid fa-bus"></i>
+                    </div>
+                    <div style="flex: 1;">
+                        <h4 style="margin: 0 0 5px; font-size: 15px; font-weight: 700; color: #222;">القصرالمحينة-ابوداو -</h4>
+                        <p style="margin: 0; font-size: 12px; color: #888;">القطب الجامعي ابوداو &larr; القصر</p>
+                    </div>
+                    <div style="display: flex; flex-direction: column; align-items: center; justify-content: space-between; height: 40px;">
+                        <i class="fa-regular fa-star" style="color: #999; font-size: 16px;"></i>
+                        <i class="fa-solid fa-chevron-left" style="color: #ccc; font-size: 14px;"></i>
+                    </div>
+                </div>
+
+                <div class="transport-item" style="background: white; border-radius: 12px; padding: 15px; display: flex; align-items: center; margin-bottom: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.02); gap: 15px;">
+                    <div style="background-color: #0d8a70; color: white; width: 45px; height: 45px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0;">
+                        <i class="fa-solid fa-bus"></i>
+                    </div>
+                    <div style="flex: 1;">
+                        <h4 style="margin: 0 0 5px; font-size: 15px; font-weight: 700; color: #222;">اغزر اوزاريف القصر</h4>
+                        <p style="margin: 0; font-size: 12px; color: #888;">القطب الجامعي القصر &larr; اغزراوزاريف</p>
+                    </div>
+                    <div style="display: flex; flex-direction: column; align-items: center; justify-content: space-between; height: 40px;">
+                        <i class="fa-regular fa-star" style="color: #999; font-size: 16px;"></i>
+                        <i class="fa-solid fa-chevron-left" style="color: #ccc; font-size: 14px;"></i>
+                    </div>
+                </div>
+
+                <div class="transport-item" style="background: white; border-radius: 12px; padding: 15px; display: flex; align-items: center; margin-bottom: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.02); gap: 15px;">
+                    <div style="background-color: #0d8a70; color: white; width: 45px; height: 45px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0;">
+                        <i class="fa-solid fa-bus"></i>
+                    </div>
+                    <div style="flex: 1;">
+                        <h4 style="margin: 0 0 5px; font-size: 15px; font-weight: 700; color: #222;">توجة مركز- القصر</h4>
+                        <p style="margin: 0; font-size: 12px; color: #888;">القطب الجامعي القصر &larr; توجة مركز</p>
+                    </div>
+                    <div style="display: flex; flex-direction: column; align-items: center; justify-content: space-between; height: 40px;">
+                        <i class="fa-regular fa-star" style="color: #999; font-size: 16px;"></i>
+                        <i class="fa-solid fa-chevron-left" style="color: #ccc; font-size: 14px;"></i>
+                    </div>
+                </div>
+
+                <div class="transport-item" style="background: white; border-radius: 12px; padding: 15px; display: flex; align-items: center; margin-bottom: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.02); gap: 15px;">
+                    <div style="background-color: #0d8a70; color: white; width: 45px; height: 45px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0;">
+                        <i class="fa-solid fa-bus"></i>
+                    </div>
+                    <div style="flex: 1;">
+                        <h4 style="margin: 0 0 5px; font-size: 15px; font-weight: 700; color: #222;">واد غير-- قطب القصر</h4>
+                        <p style="margin: 0; font-size: 12px; color: #888;">القطب الجامعي القصر &larr; واد غير</p>
+                    </div>
+                    <div style="display: flex; flex-direction: column; align-items: center; justify-content: space-between; height: 40px;">
+                        <i class="fa-regular fa-star" style="color: #999; font-size: 16px;"></i>
+                        <i class="fa-solid fa-chevron-left" style="color: #ccc; font-size: 14px;"></i>
+                    </div>
+                </div>
+
+                <div class="transport-item" style="background: white; border-radius: 12px; padding: 15px; display: flex; align-items: center; margin-bottom: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.02); gap: 15px;">
+                    <div style="background-color: #0d8a70; color: white; width: 45px; height: 45px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0;">
+                        <i class="fa-solid fa-bus"></i>
+                    </div>
+                    <div style="flex: 1;">
+                        <h4 style="margin: 0 0 5px; font-size: 15px; font-weight: 700; color: #222;">اغيل اوعزوق- قطب القصر</h4>
+                        <p style="margin: 0; font-size: 12px; color: #888;">القطب الجامعي القصر &larr; اغيل اوعزوق</p>
+                    </div>
+                    <div style="display: flex; flex-direction: column; align-items: center; justify-content: space-between; height: 40px;">
+                        <i class="fa-regular fa-star" style="color: #999; font-size: 16px;"></i>
+                        <i class="fa-solid fa-chevron-left" style="color: #ccc; font-size: 14px;"></i>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Catering Page -->
+        <main id="catering-page" class="page">
+            <header class="app-header" style="background-color: var(--primary-green); padding: 15px 20px;">
+                <button class="back-btn back-to-univ" style="background-color: rgba(255, 255, 255, 0.2); width: 40px; height: 40px; border-radius: 50%; color: var(--white); display: flex; align-items: center; justify-content: center;"><i class="fas fa-arrow-right"></i></button>
+                <h1 style="color: var(--white); font-size: 20px; font-weight: 700; margin: 0; text-align: center; flex: 1; margin-left: 40px;">الإطعام</h1>
+            </header>
+            <section class="page-content" style="flex: 1; background-color: #f8f9fa; padding: 20px; overflow-y: auto;">
+                
+                <h3 style="font-size: 16px; font-weight: 700; margin: 0 0 15px; color: #222;">اختر تاريخاً</h3>
+                <div style="display: flex; gap: 10px; margin-bottom: 25px;">
+                    <div style="flex: 1; background: white; border: 1.5px solid #eaeaea; border-radius: 12px; padding: 15px 5px; text-align: center; cursor: pointer;">
+                        <div style="font-size: 13px; color: #666; margin-bottom: 5px;">ثلاثاء</div>
+                        <div style="font-size: 18px; font-weight: 700; color: #222;">6</div>
+                    </div>
+                    <div style="flex: 1; background: white; border: 1.5px solid #eaeaea; border-radius: 12px; padding: 15px 5px; text-align: center; cursor: pointer;">
+                        <div style="font-size: 13px; color: #666; margin-bottom: 5px;">إثنين</div>
+                        <div style="font-size: 18px; font-weight: 700; color: #222;">5</div>
+                    </div>
+                    <div style="flex: 1; background: white; border: 1.5px solid #eaeaea; border-radius: 12px; padding: 15px 5px; text-align: center; cursor: pointer;">
+                        <div style="font-size: 13px; color: #666; margin-bottom: 5px;">أحد</div>
+                        <div style="font-size: 18px; font-weight: 700; color: #222;">4</div>
+                    </div>
+                </div>
+
+                <h3 style="font-size: 16px; font-weight: 700; margin: 0 0 15px; color: #222;">المطعم</h3>
+                <div style="background: white; border: 1.5px solid var(--primary-green); border-radius: 12px; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; cursor: pointer;">
+                    <span style="font-size: 15px; color: #222;">اختر مطعم</span>
+                    <i class="fa-solid fa-chevron-down" style="color: #222;"></i>
+                </div>
+
+                <h3 style="font-size: 16px; font-weight: 700; margin: 0 0 15px; color: #222;">الوجبة</h3>
+                <div style="display: flex; gap: 10px; margin-bottom: 25px;">
+                    <div style="flex: 1; background: white; border: 1.5px solid #eaeaea; border-radius: 12px; padding: 20px 5px; text-align: center; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 10px;">
+                        <i class="fa-solid fa-mug-saucer" style="font-size: 24px; color: #f39c12;"></i>
+                        <span style="font-size: 13px; color: #222; font-weight: 500;">فطور الصباح</span>
+                    </div>
+                    <div style="flex: 1; background: white; border: 1.5px solid #eaeaea; border-radius: 12px; padding: 20px 5px; text-align: center; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 10px;">
+                        <i class="fa-solid fa-burger" style="font-size: 24px; color: #e74c3c;"></i>
+                        <span style="font-size: 13px; color: #222; font-weight: 500;">الغداء</span>
+                    </div>
+                    <div style="flex: 1; background: white; border: 1.5px solid #eaeaea; border-radius: 12px; padding: 20px 5px; text-align: center; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 10px;">
+                        <i class="fa-regular fa-moon" style="font-size: 24px; color: #34495e;"></i>
+                        <span style="font-size: 13px; color: #222; font-weight: 500;">العشاء</span>
+                    </div>
+                </div>
+
+                <button style="width: 100%; background-color: #52c4b9; color: white; border: none; border-radius: 12px; padding: 18px; font-size: 16px; font-weight: 700; margin-bottom: 15px; cursor: pointer;">
+                    تأكيد الحجز
+                </button>
+                <button style="width: 100%; background-color: white; color: var(--primary-green); border: 1.5px solid var(--primary-green); border-radius: 12px; padding: 18px; font-size: 16px; font-weight: 700; margin-bottom: 25px; cursor: pointer;">
+                    عرض حجوزاتي
+                </button>
+
+                <div style="background-color: #fff8e1; border: 1px solid #ffecb3; border-radius: 12px; padding: 15px; display: flex; align-items: center; gap: 15px; margin-bottom: 10px;">
+                    <i class="fa-solid fa-circle-info" style="color: #d4ac0d; font-size: 18px;"></i>
+                    <span style="font-size: 13px; color: #555;">يتم الحجز 24 ساعة قبل وقت الوجبة</span>
+                </div>
+                <div style="background-color: #fff8e1; border: 1px solid #ffecb3; border-radius: 12px; padding: 15px; display: flex; align-items: center; gap: 15px;">
+                    <i class="fa-solid fa-circle-info" style="color: #d4ac0d; font-size: 18px;"></i>
+                    <span style="font-size: 13px; color: #555;">لا يمكن استهلاك الوجبة في مطعم مختلف</span>
+                </div>
+            </section>
+        </main>
+
+        <main id="discharge-page" class="page">
+            <header class="app-header">
+                <button class="back-btn"><i class="fas fa-arrow-left"></i></button>
+                <h1 id="header-title-discharge">Edit Profile</h1>
+                <div class="header-placeholder"></div>
+            </header>
+            <section class="discharge-content">
+                <form id="edit-profile-form" class="edit-profile-form">
+                    <div class="form-group">
+                        <label for="input-firstname" id="label-firstname">First Name</label>
+                        <input type="text" id="input-firstname" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="input-lastname" id="label-lastname">Last Name</label>
+                        <input type="text" id="input-lastname" required>
+                    </div>
+                     <div class="form-group">
+                        <label for="input-university" id="label-university">University</label>
+                        <input type="text" id="input-university" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="input-pob" id="label-pob-form">Place of Birth</label>
+                        <input type="text" id="input-pob" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="input-dob" id="label-dob-form">Date of Birth</label>
+                        <input type="date" id="input-dob" required>
+                    </div>
+                    <button type="submit" class="save-btn" id="save-changes-btn">Save Changes</button>
+                </form>
+            </section>
+        </main>
+
+        <main id="restoration-page" class="page">
+            <header class="app-header">
+                <button class="back-btn"><i class="fas fa-arrow-left"></i></button>
+                <h1 id="header-title-restoration">Change Picture</h1>
+                <div class="header-placeholder"></div>
+            </header>
+            <section class="page-content-centered">
+                <i class="fa-solid fa-image-portrait huge-icon"></i>
+                <p id="upload-prompt-text">Select a new photo for your profile and ID cards.</p>
+                <button class="action-btn" id="upload-avatar-btn">Upload New Photo</button>
+            </section>
+        </main>
+        
+        <main id="upload-cards-page" class="page">
+            <header class="app-header">
+                <button class="back-btn"><i class="fas fa-arrow-left"></i></button>
+                <h1 id="header-title-upload-cards">Upload Card Images</h1>
+                <div class="header-placeholder"></div>
+            </header>
+            <section class="page-content-centered">
+                <div class="upload-section">
+                    <p id="upload-student-card-prompt">Student Card (Front)</p>
+                    <button class="action-btn" id="upload-student-card-btn">Upload Image</button>
+                </div>
+                <div class="upload-section">
+                    <p id="upload-residence-card-prompt">Residence Card (Back)</p>
+                    <button class="action-btn" id="upload-residence-card-btn">Upload Image</button>
+                </div>
+            </section>
+        </main>
+
+        <main id="cards-page" class="page">
+            <div class="flippable-card-container">
+              <div class="flippable-card-inner">
+                  <div class="id-card flippable-card-front" id="card-1">
+                      <!-- Card is intentionally left blank -->
+                  </div>
+                  <div class="id-card flippable-card-back" id="card-2">
+                      <!-- Card is intentionally left blank -->
+                  </div>
+              </div>
+            </div>
+        </main>
+
+        <main id="profile-page" class="page">
+            <section class="profile-content">
+                <div class="profile-summary-card new-profile-header">
+                    <img src="https://i.postimg.cc/X7wz6fQ6/mami-hacker.jpg" alt="User Avatar" class="avatar-lg" id="profile-avatar-lg">
+                    <div class="profile-info">
+                        <h3 id="profile-name">بركاني امياس</h3>
+                        <p id="profile-university">جامعة بجاية</p>
+                    </div>
+                </div>
+
+                <div class="profile-details-card new-card">
+                    <div class="detail-item">
+                        <i class="fa-solid fa-location-dot"></i>
+                        <div>
+                            <p class="detail-label" id="label-pob">مكان الميلاد</p>
+                            <p class="detail-value" id="profile-pob">بجاية</p>
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="detail-item">
+                        <i class="fa-regular fa-calendar"></i>
+                        <div>
+                            <p class="detail-label" id="label-dob">تاريخ الميلاد</p>
+                            <p class="detail-value" id="profile-dob">2005-12-04</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="profile-action-card new-card">
+                    <div class="action-item">
+                        <i class="fa-solid fa-language"></i>
+                        <span id="action-change-lang" style="color: #666; font-weight: 500;">تغيير اللغة</span>
+                    </div>
+                    <button class="lang-btn-new">ar</button>
+                </div>
+
+                <button class="logout-btn new-logout" id="logout-btn">
+                    تسجيل الخروج
+                    <i class="fa-solid fa-arrow-right-from-bracket"></i>
+                </button>
+                
+                <div class="profile-footer-link">
+                    <a href="#">مذكرة إعلامية</a>
+                </div>
+            </section>
+        </main>
+
+        <nav class="bottom-nav" id="bottom-nav">
+            <div class="nav-pill" id="nav-pill"></div>
+            <button class="nav-btn" data-target="profile-page">
+                <i class="fas fa-user"></i>
+                <span id="nav-profile">حسابي</span>
+            </button>
+            <button class="nav-btn" data-target="cards-page">
+                <i class="fas fa-id-card"></i>
+                <span id="nav-cards">بطاقاتي</span>
+            </button>
+            <button class="nav-btn active" data-target="home-page">
+                <i class="fas fa-home"></i>
+                <span id="nav-home">الرئيسية</span>
+            </button>
+        </nav>
+
+    </div>
+
+    <input type="file" id="avatar-upload-input" style="display: none;" accept="image/*">
+    <input type="file" id="student-card-upload-input" style="display: none;" accept="image/*">
+    <input type="file" id="residence-card-upload-input" style="display: none;" accept="image/*">
+    <script>
+        const STUDENT_CARD_FRONT_URL = "https://i.ibb.co/MrcC510/image.jpg";
+        const RESIDENCE_CARD_BACK_URL = "https://i.ibb.co/d4qYrK52/image.jpg";
+
+        // إجبار المتصفح على تحميل الصور فوراً لتخزينها في الـ Cache حتى لو كانت مخفية
+        new Image().src = STUDENT_CARD_FRONT_URL;
+        new Image().src = RESIDENCE_CARD_BACK_URL;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // =====================
+            // Day / Night Toggle
+            // =====================
+            const themeToggleBtn = document.getElementById('theme-toggle-btn');
+            const themeMeta = document.querySelector('meta[name="theme-color"]');
+            const applyTheme = (isDark) => {
+                document.body.classList.toggle('dark-mode', isDark);
+                if (themeMeta) themeMeta.setAttribute('content', isDark ? '#121217' : '#009688');
+                try { localStorage.setItem('theme', isDark ? 'dark' : 'light'); } catch (e) {}
+            };
+            if (themeToggleBtn) {
+                themeToggleBtn.addEventListener('click', () => {
+                    applyTheme(!document.body.classList.contains('dark-mode'));
+                });
+            }
+
+            document.getElementById('card-1').style.backgroundImage = `url('${STUDENT_CARD_FRONT_URL}')`;
+            document.getElementById('card-2').style.backgroundImage = `url('${RESIDENCE_CARD_BACK_URL}')`;
+
+            // =====================
+            // Splash Screen Logic
+            // =====================
+            const splash = document.getElementById('splash-screen');
+            if (splash) {
+                setTimeout(() => {
+                    splash.classList.add('hidden');
+                    // إزالته من الـ DOM بعد انتهاء transition
+                    setTimeout(() => splash.remove(), 300);
+                }, 800); // تقليل وقت الظهور إلى 0.8 ثانية
+            }
+
+            // =====================
+            // Banner Carousel Logic
+            // =====================
+            const bannerCarousel = document.getElementById('banner-carousel');
+            const indicators = document.querySelectorAll('.indicator');
+
+            if (bannerCarousel && indicators.length) {
+                let currentSlide = 0;
+                const slides = Array.from(bannerCarousel.children);
+                const totalSlides = slides.length;
+
+                // Go to specific slide smoothly
+                const goToSlide = (index) => {
+                    currentSlide = (index + totalSlides) % totalSlides;
+                    slides[currentSlide].scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'nearest',
+                        inline: 'start'
+                    });
+                };
+
+                // IntersectionObserver to sync dots with scroll position
+                const observer = new IntersectionObserver((entries) => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) {
+                            const index = slides.indexOf(entry.target);
+                            currentSlide = index;
+                            indicators.forEach((ind, i) => {
+                                ind.classList.toggle('active', i === index);
+                            });
+                        }
+                    });
+                }, { root: bannerCarousel, threshold: 0.5 });
+
+                slides.forEach(slide => observer.observe(slide));
+
+                // Auto-advance every 4 seconds
+                let autoTimer = setInterval(() => goToSlide(currentSlide + 1), 4000);
+
+                // Reset timer on manual swipe
+                bannerCarousel.addEventListener('touchstart', () => {
+                    clearInterval(autoTimer);
+                }, { passive: true });
+
+                bannerCarousel.addEventListener('touchend', () => {
+                    autoTimer = setInterval(() => goToSlide(currentSlide + 1), 4000);
+                }, { passive: true });
+
+                // Click on dots to navigate
+                indicators.forEach((dot, i) => {
+                    dot.addEventListener('click', () => {
+                        clearInterval(autoTimer);
+                        goToSlide(i);
+                        autoTimer = setInterval(() => goToSlide(currentSlide + 1), 4000);
+                    });
+                });
+            }
+
+
+            const navButtons = document.querySelectorAll('.nav-btn');
+            const pages = document.querySelectorAll('.page');
+
+            // Sub-page navigation
+            const homePage = document.getElementById('home-page');
+            
+            const unavailablePage = document.getElementById('unavailable-page');
+            const unavailableBackBtn = document.querySelector('.unavailable-back-btn');
+            const unavailableTitle = document.getElementById('header-title-unavailable');
+
+            const universityServicesPage = document.getElementById('university-services-page');
+            const transportPage = document.getElementById('transport-page');
+            const cateringPage = document.getElementById('catering-page');
+            const enrollmentsPage = document.getElementById('enrollments-page');
+            const timetablePage = document.getElementById('timetable-page');
+
+            // زر الرجوع من صفحة الجدول الزمني
+            document.getElementById('timetable-back-btn')?.addEventListener('click', () => {
+                timetablePage.classList.remove('active');
+                homePage.classList.add('active');
+                document.querySelector('.nav-btn[data-target="home-page"]')?.classList.add('active');
+            });
+
+            // اختيار اليوم / السداسي (إعادة تشغيل حركة الحالة الفارغة)
+            const ttEmpty = document.getElementById('tt-empty');
+            const replayEmpty = () => {
+                if (!ttEmpty) return;
+                ttEmpty.style.animation = 'none';
+                ttEmpty.offsetHeight;
+                ttEmpty.style.animation = '';
+            };
+            document.querySelectorAll('.tt-day').forEach(day => {
+                day.addEventListener('click', () => {
+                    document.querySelectorAll('.tt-day').forEach(d => d.classList.remove('active'));
+                    day.classList.add('active');
+                    replayEmpty();
+                });
+            });
+            document.querySelectorAll('.tt-sem-btn').forEach(b => b.addEventListener('click', replayEmpty));
+
+            // زر الرجوع من صفحة تسجيلاتي
+            document.getElementById('enrollments-back-btn')?.addEventListener('click', () => {
+                enrollmentsPage.classList.remove('active');
+                homePage.classList.add('active');
+                document.querySelector('.nav-btn[data-target="home-page"]')?.classList.add('active');
+            });
+
+            // فتح/غلق تفاصيل التسجيلات السابقة
+            document.querySelectorAll('.enr-prev-head').forEach(head => {
+                head.addEventListener('click', () => head.parentElement.classList.toggle('open'));
+            });
+
+            document.querySelectorAll('.service-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const titleSpan = btn.querySelector('span');
+                    
+                    if (btn.id === 'goto-timetable-btn') {
+                        homePage.classList.remove('active');
+                        timetablePage.classList.add('active');
+                        document.querySelector('.nav-btn.active')?.classList.remove('active');
+                    } else if (btn.id === 'goto-enrollments-btn') {
+                        homePage.classList.remove('active');
+                        enrollmentsPage.querySelector('.enr-content').scrollTop = 0;
+                        enrollmentsPage.classList.add('active');
+                        document.querySelector('.nav-btn.active')?.classList.remove('active');
+                    } else if (btn.id === 'goto-restoration-btn') {
+                        homePage.classList.remove('active');
+                        universityServicesPage.classList.add('active');
+                        document.querySelector('.nav-btn.active')?.classList.remove('active');
+                    } else {
+                        if (titleSpan) {
+                            unavailableTitle.textContent = titleSpan.textContent;
+                        }
+                        homePage.classList.remove('active');
+                        unavailablePage.classList.add('active');
+                        document.querySelector('.nav-btn.active')?.classList.remove('active');
+                    }
+                });
+            });
+
+            if (unavailableBackBtn) {
+                unavailableBackBtn.addEventListener('click', () => {
+                    unavailablePage.classList.remove('active');
+                    homePage.classList.add('active');
+                    document.querySelector('.nav-btn[data-target="home-page"]')?.classList.add('active');
+                });
+            }
+
+            document.querySelectorAll('.back-to-home').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    universityServicesPage.classList.remove('active');
+                    homePage.classList.add('active');
+                    document.querySelector('.nav-btn[data-target="home-page"]')?.classList.add('active');
+                });
+            });
+
+            document.querySelectorAll('.back-to-univ').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    transportPage.classList.remove('active');
+                    cateringPage.classList.remove('active');
+                    universityServicesPage.classList.add('active');
+                });
+            });
+
+            const gotoTransportBtn = document.getElementById('goto-transport-btn');
+            if (gotoTransportBtn) {
+                gotoTransportBtn.addEventListener('click', () => {
+                    universityServicesPage.classList.remove('active');
+                    transportPage.classList.add('active');
+                });
+            }
+
+            const gotoCateringBtn = document.getElementById('goto-catering-btn');
+            if (gotoCateringBtn) {
+                gotoCateringBtn.addEventListener('click', () => {
+                    universityServicesPage.classList.remove('active');
+                    cateringPage.classList.add('active');
+                });
+            }
+
+            // ============================================
+            // Navigation with sliding green pill
+            // ============================================
+            const navPill = document.getElementById('nav-pill');
+
+            // Move the green pill to the active button
+            const movePill = (activeBtn) => {
+                if (!navPill || !activeBtn) return;
+                const navEl = document.getElementById('bottom-nav');
+                const navRect = navEl.getBoundingClientRect();
+                const btnRect = activeBtn.getBoundingClientRect();
+                navPill.style.left  = (btnRect.left - navRect.left) + 'px';
+                navPill.style.width = btnRect.width + 'px';
+            };
+
+            // Initialize pill on first load (no animation)
+            const initPill = () => {
+                const activeBtn = document.querySelector('.nav-btn.active');
+                if (activeBtn && navPill) {
+                    navPill.style.transition = 'none';
+                    movePill(activeBtn);
+                    requestAnimationFrame(() => { navPill.style.transition = ''; });
+                }
+            };
+            initPill();
+
+            // ترتيب الصفحات من اليسار لليمين بصرياً في واجهة RTL
+            // home(0) على اليسار | cards(1) في المنتصف | profile(2) على اليمين
+            const pageOrder = { 'home-page': 0, 'cards-page': 1, 'profile-page': 2 };
+            let currentPageId = 'home-page';
+            let isPageAnimating = false; // لمنع الخلل عند الضغط المتكرر السريع
+
+            const switchPage = (targetPageId, activeBtn) => {
+                if (targetPageId === currentPageId || isPageAnimating) return;
+                isPageAnimating = true;
+
+                const fromPage = document.getElementById(currentPageId);
+                const toPage   = document.getElementById(targetPageId);
+                if (!fromPage || !toPage) {
+                    isPageAnimating = false;
+                    return;
+                }
+
+                const fromIdx = pageOrder[currentPageId] ?? 0;
+                const toIdx   = pageOrder[targetPageId] ?? 0;
+
+                const dir = toIdx > fromIdx ? 1 : -1;
+
+                toPage.style.transition = 'none';
+                toPage.style.transform = `translateX(${dir * 100}%)`;
+                toPage.classList.add('active');
+
+                toPage.getBoundingClientRect();
+
+                toPage.style.transition = '';
+                toPage.style.transform = 'translateX(0)';
+                fromPage.style.transform = `translateX(${-dir * 100}%)`;
+
+                setTimeout(() => {
+                    fromPage.classList.remove('active');
+                    fromPage.style.transform = '';
+                    isPageAnimating = false; // فتح القفل بعد انتهاء الانتقال
+                }, 400);
+
+                currentPageId = targetPageId;
+
+                navButtons.forEach(btn => btn.classList.remove('active'));
+                activeBtn.classList.add('active');
+                movePill(activeBtn);
+            };
+
+            // Bottom navigation click handler
+            navButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    const targetPageId = button.getAttribute('data-target');
+                    switchPage(targetPageId, button);
+                });
+            });
+
+
+            // ID card: swipe (left/right) OR tap to flip
+            const cardInner = document.querySelector('.flippable-card-inner');
+            if (cardInner) {
+                let currentAngle = 0;
+                let touchStartX = 0;
+                let touchStartY = 0;
+                let touchHandled = false; // لمنع تكرار click بعد touch
+
+                const flipCard = () => {
+                    currentAngle += 180;
+                    cardInner.style.transition = 'transform 0.5s cubic-bezier(0.25, 1, 0.5, 1)';
+                    cardInner.style.transform = `rotateY(${currentAngle}deg)`;
+                    const isFlipped = (currentAngle / 180) % 2 !== 0;
+                    cardInner.classList.toggle('is-flipped', isFlipped);
+                };
+
+                // --- Touch events (الهاتف) ---
+                cardInner.addEventListener('touchstart', (e) => {
+                    touchStartX = e.touches[0].clientX;
+                    touchStartY = e.touches[0].clientY;
+                    touchHandled = false;
+                }, { passive: true });
+
+                cardInner.addEventListener('touchend', (e) => {
+                    const absX = Math.abs(e.changedTouches[0].clientX - touchStartX);
+                    const absY = Math.abs(e.changedTouches[0].clientY - touchStartY);
+                    touchHandled = true;
+
+                    if (absX >= 30 && absX > absY) {
+                        // Swipe يسار أو يمين → لف
+                        flipCard();
+                    } else if (absX < 10 && absY < 10) {
+                        // Tap بدون حركة → لف
+                        flipCard();
+                    }
+                }, { passive: true });
+
+                // --- Mouse click (الكمبيوتر) ---
+                cardInner.addEventListener('click', () => {
+                    if (touchHandled) {
+                        touchHandled = false;
+                        return; // تجنب التكرار على الهاتف
+                    }
+                    flipCard();
+                });
+            }
+
+            // Language switcher logic
+            const langToggleButton = document.querySelector('.profile-action-card');
+            const langDisplay = document.querySelector('.lang-btn');
+            const mobileFrame = document.querySelector('.mobile-frame');
+            let currentLang = 'en';
+
+            const translations = {
+              en: {
+                'nav-home': 'Home',
+                'nav-cards': 'Cards',
+                'nav-profile': 'Profile',
+                'header-title-home': 'Student Portal',
+                'service-discharge': 'Discharge',
+                'service-timetable': 'Timetable',
+                'service-group': 'Group and Section',
+                'service-exams-schedule': 'Exams Schedule',
+                'service-exam-grades': 'Exam Grades',
+                'service-assessment': 'Assessment',
+                'service-percentage': 'Percentage (%)',
+                'service-transcripts': 'Academic transcripts',
+                'service-debts': 'Debts',
+                'service-upload-cards': 'Upload Card Images',
+                'service-enrollments': 'Enrollments',
+                'service-restoration': 'Restoration',
+                'service-other': 'Other services',
+                'header-title-cards': 'ID Cards',
+                'header-title-profile': 'My Profile',
+                'label-pob': 'Place of Birth',
+                'label-dob': 'Date of Birth',
+                'action-change-lang': 'Change Language',
+                'logout-btn': 'LOGOUT',
+                'header-title-discharge': 'Edit Profile',
+                'label-firstname': 'First Name',
+                'label-lastname': 'Last Name',
+                'label-university': 'University',
+                'label-pob-form': 'Place of Birth',
+                'label-dob-form': 'Date of Birth',
+                'save-changes-btn': 'Save Changes',
+                'header-title-restoration': 'Change Picture',
+                'upload-prompt-text': 'Select a new photo for your profile and ID cards.',
+                'upload-avatar-btn': 'Upload New Photo',
+                'header-title-upload-cards': 'Upload Card Images',
+                'upload-student-card-prompt': 'Student Card (Front)',
+                'upload-residence-card-prompt': 'Residence Card (Back)',
+              },
+              ar: {
+                'nav-home': 'الرئيسية',
+                'nav-cards': 'البطاقات',
+                'nav-profile': 'الملف الشخصي',
+                'header-title-home': 'بوابة الطالب',
+                'service-discharge': 'براءة الذمة',
+                'service-timetable': 'جدول التوقيت',
+                'service-group': 'الفوج والفرع',
+                'service-exams-schedule': 'جدول الامتحانات',
+                'service-exam-grades': 'نقاط الإمتحان',
+                'service-assessment': 'التقييم',
+                'service-percentage': 'النسبة المئوية (%)',
+                'service-transcripts': 'كشوف النقاط',
+                'service-debts': 'الديون',
+                'service-upload-cards': 'تحميل صور البطاقات',
+                'service-enrollments': 'التسجيلات',
+                'service-restoration': 'الإطعام',
+                'service-other': 'خدمات أخرى',
+                'header-title-cards': 'بطاقات التعريف',
+                'header-title-profile': 'ملفي الشخصي',
+                'label-pob': 'مكان الميلاد',
+                'label-dob': 'تاريخ الميلاد',
+                'action-change-lang': 'تغيير اللغة',
+                'logout-btn': 'تسجيل الخروج',
+                'header-title-discharge': 'تعديل الملف الشخصي',
+                'label-firstname': 'الإسم',
+                'label-lastname': 'اللقب',
+                'label-university': 'الجامعة',
+                'label-pob-form': 'مكان الميلاد',
+                'label-dob-form': 'تاريخ الميلاد',
+                'save-changes-btn': 'حفظ التغييرات',
+                'header-title-restoration': 'تغيير الصورة',
+                'upload-prompt-text': 'اختر صورة جديدة لملفك الشخصي وبطاقات الهوية.',
+                'upload-avatar-btn': 'تحميل صورة جديدة',
+                'header-title-upload-cards': 'تحميل صور البطاقات',
+                'upload-student-card-prompt': 'بطاقة الطالب (الأمام)',
+                'upload-residence-card-prompt': 'بطاقة الإقامة (الخلف)',
+              }
+            };
+
+            const setLanguage = (lang) => {
+                currentLang = lang;
+                if (lang === 'ar') {
+                    mobileFrame.classList.add('rtl');
+                    langDisplay.textContent = 'ar-DZ';
+                } else {
+                    mobileFrame.classList.remove('rtl');
+                    langDisplay.textContent = 'en-DZ';
+                }
+
+                Object.keys(translations[lang]).forEach(key => {
+                    const element = document.getElementById(key);
+                    if (element) {
+                        element.textContent = translations[lang][key];
+                    }
+                });
+            };
+
+            if (langToggleButton) {
+                langToggleButton.addEventListener('click', () => {
+                    const newLang = currentLang === 'en' ? 'ar' : 'en';
+                    setLanguage(newLang);
+                });
+            }
+
+            // User profile data management
+            let currentUserData = {
+                firstName: 'NEDJM-EDDINE',
+                lastName: 'HACHEMAOUI',
+                university: 'université de béjaia',
+                pob: 'BEJAIA',
+                dob: '2007-11-10',
+                avatarUrl: 'https://i.ibb.co/4ZgdywFC/IMG-3557.jpg'
+            };
+
+            // تحميل صورة البروفايل فوراً لتخزينها في الكاش
+            new Image().src = currentUserData.avatarUrl;
+
+            const updateUserInfo = (user) => {
+                const fullName = `${user.lastName} ${user.firstName}`;
+                
+                // Profile Page
+                document.getElementById('profile-name').textContent = fullName;
+                document.getElementById('profile-university').textContent = user.university;
+                document.getElementById('profile-pob').textContent = user.pob;
+                document.getElementById('profile-dob').textContent = user.dob;
+                document.getElementById('profile-avatar-lg').src = user.avatarUrl;
+
+                // Header
+                document.getElementById('header-avatar-sm').src = user.avatarUrl;
+            };
+
+            // Edit profile form logic
+            const editProfileForm = document.getElementById('edit-profile-form');
+
+            const populateEditForm = () => {
+                document.getElementById('input-firstname').value = currentUserData.firstName;
+                document.getElementById('input-lastname').value = currentUserData.lastName;
+                document.getElementById('input-university').value = currentUserData.university;
+                document.getElementById('input-pob').value = currentUserData.pob;
+                document.getElementById('input-dob').value = currentUserData.dob;
+            };
+            
+            if (editProfileForm) {
+                editProfileForm.addEventListener('submit', (event) => {
+                    event.preventDefault();
+                    
+                    currentUserData = {
+                        ...currentUserData,
+                        firstName: document.getElementById('input-firstname').value,
+                        lastName: document.getElementById('input-lastname').value,
+                        university: document.getElementById('input-university').value,
+                        pob: document.getElementById('input-pob').value,
+                        dob: document.getElementById('input-dob').value,
+                    };
+
+                    updateUserInfo(currentUserData);
+                    alert('Profile updated successfully!');
+                    // Go back to home page after saving
+                    backBtnFromDischarge.dispatchEvent(new Event('click'));
+                });
+            }
+
+            // Avatar upload logic
+            const uploadAvatarBtn = document.getElementById('upload-avatar-btn');
+            const avatarUploadInput = document.getElementById('avatar-upload-input');
+
+            if (uploadAvatarBtn && avatarUploadInput) {
+                uploadAvatarBtn.addEventListener('click', () => {
+                    avatarUploadInput.click();
+                });
+
+                avatarUploadInput.addEventListener('change', (event) => {
+                    const target = event.target;
+                    if (target.files && target.files[0]) {
+                        const file = target.files[0];
+                        const reader = new FileReader();
+
+                        reader.onload = (e) => {
+                            const newAvatarUrl = e.target.result;
+                            currentUserData.avatarUrl = newAvatarUrl;
+                            updateUserInfo(currentUserData);
+                            alert('Avatar updated successfully!');
+                            backBtnFromRestoration.dispatchEvent(new Event('click'));
+                        };
+
+                        reader.readAsDataURL(file);
+                    }
+                });
+            }
+
+            // Card image upload logic
+            const uploadStudentCardBtn = document.getElementById('upload-student-card-btn');
+            const studentCardUploadInput = document.getElementById('student-card-upload-input');
+            const studentCard = document.getElementById('card-1');
+
+            const uploadResidenceCardBtn = document.getElementById('upload-residence-card-btn');
+            const residenceCardUploadInput = document.getElementById('residence-card-upload-input');
+            const residenceCard = document.getElementById('card-2');
+
+            const handleCardImageUpload = (file, cardElement) => {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const imageUrl = e.target.result;
+                    cardElement.style.backgroundImage = `url(${imageUrl})`;
+                    alert('Card image updated!');
+                };
+                reader.readAsDataURL(file);
+            };
+
+            if (uploadStudentCardBtn && studentCardUploadInput && studentCard) {
+                uploadStudentCardBtn.addEventListener('click', () => studentCardUploadInput.click());
+                studentCardUploadInput.addEventListener('change', (event) => {
+                    const target = event.target;
+                    if (target.files && target.files[0]) {
+                        handleCardImageUpload(target.files[0], studentCard);
+                    }
+                });
+            }
+
+            if (uploadResidenceCardBtn && residenceCardUploadInput && residenceCard) {
+                uploadResidenceCardBtn.addEventListener('click', () => residenceCardUploadInput.click());
+                residenceCardUploadInput.addEventListener('change', (event) => {
+                    const target = event.target;
+                    if (target.files && target.files[0]) {
+                        handleCardImageUpload(target.files[0], residenceCard);
+                    }
+                });
+            }
+
+
+            // Initialize the app with default user data and language
+            updateUserInfo(currentUserData);
+            setLanguage('ar');
+        });
+        if ('serviceWorker' in navigator) {
+          // نسجل الـ Service Worker فوراً (لا ننتظر load event لتسريع التخزين)
+          navigator.serviceWorker
+            .register('./sw.js', { scope: './' })
+            .then((registration) => {
+              console.log('✅ Service Worker مسجل بنجاح:', registration.scope);
+              // تحقق من وجود تحديث
+              registration.addEventListener('updatefound', () => {
+                const newWorker = registration.installing;
+                newWorker.addEventListener('statechange', () => {
+                  if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                    console.log('🔄 تحديث متاح، سيتم التحديث تلقائياً');
+                  }
+                });
+              });
+            })
+            .catch(err => console.log('❌ خطأ في تسجيل الـ Service Worker:', err));
+        }
+    </script>
+</body>
+</html>
